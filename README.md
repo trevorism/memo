@@ -7,7 +7,7 @@
 
 Trevorism Memo App
 
-Current version: 0.0.1
+Current version: 0.1.0
 
 [Trevorism Memo](https://memo.trevorism.com/)
 
