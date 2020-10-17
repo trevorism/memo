@@ -6,6 +6,7 @@ class MemoMessage {
     String type // text | url
     String content
     boolean read
+    boolean paid
     Date dateCreated
     Date dateRead
 

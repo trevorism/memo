@@ -6,7 +6,7 @@ import com.trevorism.gcloud.webapi.model.MemoMessage
 
 class DefaultMessageService implements MessageService{
 
-    private Repository<MemoMessage> repository = new PingingDatastoreRepository<>()
+    private Repository<MemoMessage> repository = new PingingDatastoreRepository<>(MemoMessage)
 
     @Override
     MemoMessage saveMessage(MemoMessage message) {
