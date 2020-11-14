@@ -51,8 +51,8 @@ class TextController {
         SessionCreateParams params = SessionCreateParams.builder()
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("https://memo.trevorism.com/paymentsuccess")
-                .setCancelUrl("https://memo.trevorism.com/")
+                .setSuccessUrl("https://memowand.com/paymentsuccess")
+                .setCancelUrl("https://memowand.com/")
                 .addLineItem(lineItem)
                 .build()
 

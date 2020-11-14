@@ -5,11 +5,11 @@
 ![GitHub language count](https://img.shields.io/github/languages/count/trevorism/memo)
 ![GitHub top language](https://img.shields.io/github/languages/top/trevorism/memo)
 
-Trevorism Memo App
+Memowand.com
 
-Current version: 0.1.0
+Current version: 0.2.0
 
-[Trevorism Memo](https://memo.trevorism.com/)
+[Memowand](https://memowand.com/)
 
 # How to build
 `gradle clean build`
