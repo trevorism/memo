@@ -16,7 +16,7 @@
 <script>
 import { loadStripe } from '@stripe/stripe-js'
 import axios from 'axios'
-const stripePromise = loadStripe('pk_live_51HnEbQICfJY6OCI1vFQvFdkTXQwA50taTQCBEE94N2DbiwIhqv8vCHrv9nrd5EbXAZxQR1X2AHaj64FaarM9SGFJ00yNha4AP3')
+const stripePromise = loadStripe('pk_live_51HbczGKUPlXay6LPD19T6KKerdVzh6pDRX1rSlDLQALdep9aQVoZ2gv9T17YptAw3Ac1mxBzfsqWoooQdPQtqYno00InsjrrOe')
 
 export default {
   name: 'Stripe',
