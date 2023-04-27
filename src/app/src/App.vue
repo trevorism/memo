@@ -1,19 +1,14 @@
-<template>
-  <div id="app">
-    <router-view></router-view>
-  </div>
-</template>
+<script setup>
+import MenuBar from '@trevorism/ui-header-bar'
+import Splash from "./components/Splash.vue";
 
-<script>
-
-export default {
-  name: 'App'
-}
 </script>
 
-<style>
-#app {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+<template>
+  <menu-bar></menu-bar>
+  <splash msg="Hello World"></splash>
+</template>
+
+<style scoped>
+
 </style>
