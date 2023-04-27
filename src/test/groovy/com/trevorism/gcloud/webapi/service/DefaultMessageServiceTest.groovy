@@ -2,7 +2,7 @@ package com.trevorism.gcloud.webapi.service
 
 import com.trevorism.data.Repository
 import com.trevorism.gcloud.webapi.model.MemoMessage
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DefaultMessageServiceTest {
 

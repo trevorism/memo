@@ -1,6 +1,7 @@
 package com.trevorism.gcloud.webapi.controller
 
-import org.junit.Test
+import com.trevorism.controller.TextController
+import org.junit.jupiter.api.Test
 
 
 class TextControllerTest {

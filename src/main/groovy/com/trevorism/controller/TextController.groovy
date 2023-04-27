@@ -1,35 +1,34 @@
-package com.trevorism.gcloud.webapi.controller
+package com.trevorism.controller
 
 import com.stripe.Stripe
 import com.stripe.model.checkout.Session
 import com.stripe.param.checkout.SessionCreateParams
+import com.trevorism.ClasspathBasedPropertiesProvider
+import com.trevorism.PropertiesProvider
 import com.trevorism.gcloud.webapi.model.MemoMessage
 import com.trevorism.gcloud.webapi.model.TextSubmission
 import com.trevorism.gcloud.webapi.service.DefaultMessageService
 import com.trevorism.gcloud.webapi.service.MessageService
-import com.trevorism.secure.PropertiesProvider
-import io.swagger.annotations.Api
+import io.micronaut.http.MediaType
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Post
+import io.swagger.v3.oas.annotations.tags.Tag
 
-import javax.ws.rs.Consumes
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.core.MediaType
 import java.util.logging.Logger
 
-@Api("Text Operations")
-@Path("/text")
+@Controller("/api/text")
 class TextController {
 
     private static final Logger log = Logger.getLogger(TextController.class.name)
     public static final BigDecimal COST_IN_USD = 1.99
     public static final int PREVIEW_LENGTH = 10
-    private PropertiesProvider propertiesProvider = new PropertiesProvider()
+    private PropertiesProvider propertiesProvider = new ClasspathBasedPropertiesProvider()
     private MessageService messageService = new DefaultMessageService()
 
-    @Path("submission")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    Map submitText(TextSubmission textSubmission) {
+    @Tag(name = "Text Operations")
+    @Post(value = "/submission", produces = MediaType.APPLICATION_JSON, consumes = MediaType.APPLICATION_JSON)
+    Map submitText(@Body TextSubmission textSubmission) {
         log.info(textSubmission.toString())
         Stripe.apiKey = propertiesProvider.getProperty("stripeApiKey")
 
