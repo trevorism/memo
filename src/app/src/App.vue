@@ -1,11 +1,12 @@
 <script setup>
-import MenuBar from '@trevorism/ui-header-bar'
-import SplashPage from './components/SplashPage.vue'
+import Header from "./components/Header.vue";
 </script>
 
 <template>
-  <menu-bar></menu-bar>
-  <splash-page msg="Hello World"></splash-page>
+  <div>
+    <div style="height: 80px"><Header></Header></div>
+    <router-view></router-view>
+  </div>
 </template>
 
 <style scoped></style>

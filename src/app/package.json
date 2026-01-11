@@ -24,7 +24,6 @@
    },
    "devDependencies": {
       "@rushstack/eslint-patch": "^1.15.0",
-      "@trevorism/ui-header-bar": "^5.0.0",
       "@vitejs/plugin-vue": "^6.0.3",
       "@vue/eslint-config-prettier": "^10.2.0",
       "@vue/test-utils": "^2.4.6",
