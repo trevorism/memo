@@ -12,6 +12,8 @@ micronaut:
       default:
         enabled: true
         mapping: /**
+        headers:
+          cache-control: "no-cache, no-store, must-revalidate"
         paths: classpath:public
       swagger:
         paths: classpath:META-INF/swagger

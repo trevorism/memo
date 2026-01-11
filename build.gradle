@@ -60,6 +60,7 @@ dependencies {
 
     runtimeOnly("ch.qos.logback:logback-classic")
 
+    implementation ('com.trevorism:micronaut-utility-beans:1.6.0')
     testImplementation 'com.trevorism:test-result-events:0.3.0'
     acceptanceImplementation 'io.cucumber:cucumber-groovy:6.10.4'
 }
@@ -89,7 +90,7 @@ appengine {
         projectId = "trevorism-memo"
         stopPreviousVersion = true
         promote = true
-        version = "0-0-1"
+        version = "0-1-0"
     }
 }
 
