@@ -21,13 +21,13 @@
             <va-inner-loading :loading="disabled"> Submit </va-inner-loading>
           </va-button>
 
-          <va-button color="danger" :to="{ name: 'Login', params: { guid: guid } }"> Cancel </va-button>
+          <va-button color="danger" :to="{ name: 'Login' }"> Cancel </va-button>
         </div>
       </div>
     </va-form>
     <div v-if="successMessage !== ''" class="w-80 text-center">
       {{ successMessage }}
-      <va-chip flat class="grid justify-items-center basis-1/4" :to="{ name: 'Login', params: { guid: guid } }">Login</va-chip>
+      <va-chip flat class="grid justify-items-center basis-1/4" :to="{ name: 'Login' }">Login</va-chip>
     </div>
     <va-alert v-if="errorMessage.length > 0" class="w-80 text-center" color="danger">{{ errorMessage }}</va-alert>
   </div>
@@ -36,9 +36,10 @@
 <script>
 import axios from 'axios'
 
+const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
+
 export default {
   name: 'ForgotPassword',
-  props: ['guid'],
   data() {
     return {
       email: '',
@@ -51,7 +52,7 @@ export default {
     invokeButton: function () {
       let request = {
         email: this.email,
-        tenantId: this.guid
+        tenantId: TENANT_GUID
       }
       this.disabled = true
       this.errorMessage = ''

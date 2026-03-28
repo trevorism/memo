@@ -2,8 +2,9 @@
   <div class="grid justify-items-center" id="prototype">
     <div id="login" class="container">
       <div class="grid justify-items-center">
+        <h2 class="text-xl font-bold py-6 my-6">Login to Memowand</h2>
         <div class="grid justify-items-right">
-          <va-chip flat class="" :to="{ name: 'ForgotPassword', params: { guid: guid } }">Forgot Password?</va-chip>
+          <va-chip flat class="" :to="{ name: 'ForgotPassword' }">Forgot Password?</va-chip>
         </div>
 
         <va-form ref="loginForm" class="border-2 rounded-md w-80" tag="form" @submit.prevent="invokeButton">
@@ -82,10 +83,12 @@
 import axios from 'axios'
 import {VaButton} from "vuestic-ui";
 
+const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
+
 export default {
-  props: ['guid'],
   inject: ['mixpanel'],
   name: 'Login',
+  components: { VaButton },
   data() {
     return {
       username: '',
@@ -100,7 +103,7 @@ export default {
   methods: {
     loginGoogle: function() {
       let returnUrl = this.$route.query.return_url
-      let url = 'api/google/' + this.guid
+      let url = 'api/google/' + TENANT_GUID
       if(returnUrl) {
         url += '?return_url=' + encodeURIComponent(returnUrl)
       }
@@ -114,7 +117,7 @@ export default {
     },
     loginMicrosoft: function() {
       let returnUrl = this.$route.query.return_url
-      let url = 'api/microsoft/' + this.guid
+      let url = 'api/microsoft/' + TENANT_GUID
       if(returnUrl) {
         url += '?return_url=' + encodeURIComponent(returnUrl)
       }
@@ -134,16 +137,17 @@ export default {
       }
       this.disabled = true
       this.errorMessage = ''
-      axios.post('api/login/' + this.guid, request)
+      axios.post('api/login/' + TENANT_GUID, request)
         .then(() => {
+          const loggedInUser = self.username
           this.disabled = false
-          this.mixpanel.identify(self.username)
+          this.mixpanel.identify(loggedInUser)
           this.clear()
           let returnUrl = self.$route.query.return_url
           if (returnUrl) {
             window.location.href = returnUrl
           } else {
-            window.location.href = 'https://trevorism.com'
+            self.$router.push({ name: 'Welcome' })
           }
         })
         .catch(() => {
