@@ -4,5 +4,5 @@ class LoginRequest {
     String username
     String password
     String type = "user"
+    boolean rememberMe = false
 }
-

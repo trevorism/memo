@@ -30,6 +30,10 @@
               error-messages="Must be at least 6 characters"
             />
 
+            <div class="mb-4 flex items-center">
+              <va-checkbox v-model="rememberMe" label="Remember me" />
+            </div>
+
             <div class="grid justify-items-center">
               <va-button color="success" :disabled="disabled" type="submit">
                 <VaInnerLoading :loading="disabled"> Submit </VaInnerLoading>
@@ -43,7 +47,7 @@
   </div>
   <div class="grid justify-items-center">
     <h4 class="text-large font-bold py-6">-- or --</h4>
-    <button class="my-2 gsi-material-button" style="width:215px" @click="loginMicrosoft">
+    <button class="gsi-material-button" style="width:215px" @click="loginMicrosoft">
       <div class="gsi-material-button-state"></div>
       <div class="gsi-material-button-content-wrapper">
         <div class="gsi-material-button-icon">
@@ -93,6 +97,7 @@ export default {
     return {
       username: '',
       password: '',
+      rememberMe: false,
       errorMessage: '',
       disabled: false
     }
@@ -133,7 +138,8 @@ export default {
       let self = this
       let request = {
         username: this.username,
-        password: this.password
+        password: this.password,
+        rememberMe: this.rememberMe
       }
       this.disabled = true
       this.errorMessage = ''

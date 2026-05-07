@@ -9,14 +9,19 @@ class LoginEvent {
     String username
     String tenantId
     boolean success
+    boolean rememberMe
     Date date = new Date()
 
     static String createEventJson(String username, String tenantId, boolean success) {
+        return createEventJson(username, tenantId, success, false)
+    }
+
+    static String createEventJson(String username, String tenantId, boolean success, boolean rememberMe) {
         LoginEvent event = new LoginEvent()
         event.username = username
         event.tenantId = tenantId
         event.success = success
+        event.rememberMe = rememberMe
         return gson.toJson(event)
     }
 }
-

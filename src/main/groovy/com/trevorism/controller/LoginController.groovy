@@ -32,6 +32,9 @@ class LoginController {
 
     private AsyncHttpClient asyncHttpClient = new AsyncJsonHttpClient()
 
+    private static final int COOKIE_MAX_AGE_REMEMBER_ME = 30 * 24 * 60 // 30 days in minutes
+    private static final int COOKIE_MAX_AGE_DEFAULT = 15 * 60 // 15 minutes in minutes
+
     @Tag(name = "Login Operations")
     @Operation(summary = "Login to Memowand")
     @Post(value = "/", produces = MediaType.APPLICATION_JSON, consumes = MediaType.APPLICATION_JSON)
@@ -55,9 +58,10 @@ class LoginController {
             throw new HttpResponseException(400, "Unable to find user")
         }
 
-        def cookie1 = new NettyCookie("session", token).path("/").maxAge(15 * 60).secure(true).domain(".memowand.com")
-        def cookie2 = new NettyCookie("user_name", loginRequest.username).path("/").maxAge(15 * 60).secure(true).domain(".memowand.com")
-        def cookie3 = new NettyCookie("admin", user.admin.toString()).path("/").maxAge(15 * 60).secure(true).domain(".memowand.com")
+        int maxAge = loginRequest.rememberMe ? COOKIE_MAX_AGE_REMEMBER_ME : COOKIE_MAX_AGE_DEFAULT
+        def cookie1 = new NettyCookie("session", token).path("/").maxAge(maxAge).secure(true).domain(".memowand.com")
+        def cookie2 = new NettyCookie("user_name", loginRequest.username).path("/").maxAge(maxAge).secure(true).domain(".memowand.com")
+        def cookie3 = new NettyCookie("admin", user.admin.toString()).path("/").maxAge(maxAge).secure(true).domain(".memowand.com")
 
         sendLoginEvent(loginRequest, guid, true)
         return HttpResponse.ok().cookies([cookie1, cookie2, cookie3] as Set<Cookie>)
@@ -94,8 +98,7 @@ class LoginController {
     }
 
     private void sendLoginEvent(LoginRequest loginRequest, String guid, boolean success) {
-        String eventJson = LoginEvent.createEventJson(loginRequest.username, guid, success)
+        String eventJson = LoginEvent.createEventJson(loginRequest.username, guid, success, loginRequest.rememberMe)
         asyncHttpClient.post("https://event.data.trevorism.com/event/login", eventJson, null)
     }
 }
-
