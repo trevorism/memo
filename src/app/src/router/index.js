@@ -1,49 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../components/Login.vue'
-import ForgotPassword from '../components/ForgotPassword.vue'
-import mixpanel from 'mixpanel-browser';
-import SplashPage from "../components/SplashPage.vue";
-import Register from "../components/Register.vue";
-import Welcome from "../components/Welcome.vue";
+
+const routes = [
+  { path: '/', name: 'Splash', component: () => import('../components/SplashPage.vue') },
+  { path: '/login', name: 'Login', component: () => import('../components/Login.vue') },
+  { path: '/register', name: 'Register', component: () => import('../components/Register.vue') },
+  { path: '/welcome', name: 'Welcome', component: () => import('../components/Welcome.vue') },
+  { path: '/dashboard', name: 'Dashboard', component: () => import('../components/Dashboard.vue') },
+  { path: '/albums', name: 'Albums', component: () => import('../components/Albums.vue') },
+  { path: '/album/:id', name: 'AlbumDetail', component: () => import('../components/AlbumDetail.vue') },
+]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      name: 'Splash',
-      component: SplashPage,
-      props: true
-    },
-    {
-      path: '/login/',
-      name: 'Login',
-      component: Login,
-      props: true
-    },
-    {
-      path: '/register/',
-      name: 'Register',
-      component: Register,
-      props: true
-    },
-    {
-      path: '/forgot/',
-      name: 'ForgotPassword',
-      component: ForgotPassword,
-      props: true
-    },
-    {
-      path: '/welcome/',
-      name: 'Welcome',
-      component: Welcome,
-      props: true
-    }
-  ]
-})
-
-router.afterEach((to) => {
-  mixpanel.track(to.fullPath)
+  history: createWebHistory(),
+  routes,
 })
 
 export default router
