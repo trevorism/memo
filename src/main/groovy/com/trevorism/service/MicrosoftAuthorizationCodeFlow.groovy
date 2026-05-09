@@ -12,7 +12,7 @@ import jakarta.inject.Named
 class MicrosoftAuthorizationCodeFlow implements Oauth2AuthorizationCodeFlow {
 
     public static final String TENANT_ID = "d77da90e-329a-41c3-b8b7-f76b8bf71b06"
-    public static final String CLIENT_ID = "c3ede79b-cc30-4f21-818c-45f727113b0e"
+    public static final String CLIENT_ID = "6a213614-458e-4167-a7d7-7a0b099a6e5a"
     public static final String INSTANCE = "https://login.microsoftonline.com"
     public static final String REDIRECT_URL = "https://memowand.com/api/microsoft/callback"
     public static final String AUTH_MICROSOFT_ENDPOINT = "https://auth.trevorism.com/microsoft"
