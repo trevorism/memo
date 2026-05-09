@@ -36,6 +36,9 @@ class Oauth2Utils {
         String responseBody = response.entity.content.text
 
         Oauth2Response oauth2Response = gson.fromJson(responseBody, Oauth2Response)
+        if (!oauth2Response?.access_token || !oauth2Response?.id_token) {
+            throw new IllegalStateException("OAuth token exchange failed: ${responseBody}")
+        }
         return oauth2Response
     }
 

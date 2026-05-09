@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
 class GoogleController {
 
     private static final Logger log = LoggerFactory.getLogger(GoogleController)
+    private static final String MEMOWAND_TENANT_GUID = "606db07c-3733-4697-88de-bb159773ea94"
 
     @Inject
     @Named("google")
@@ -28,7 +29,7 @@ class GoogleController {
     @Operation(summary = "Gets a Google login URL")
     @Get(value = "/", produces = MediaType.APPLICATION_JSON)
     String getGoogleLoginUrl(@QueryValue Optional<String> return_url) {
-        return getGoogleLoginUrl(null, return_url)
+        return getGoogleLoginUrl(MEMOWAND_TENANT_GUID, return_url)
     }
 
     @Tag(name = "Google Operations")
@@ -36,7 +37,8 @@ class GoogleController {
     @Get(value = "/{guid}", produces = MediaType.APPLICATION_JSON)
     String getGoogleLoginUrl(String guid, @QueryValue Optional<String> return_url) {
         String returnUrl = return_url.orElse("https://memowand.com")
-        return oauth2AuthorizationCodeFlow.getAuthorizationUrl(guid, returnUrl)
+        String tenantGuid = guid ?: MEMOWAND_TENANT_GUID
+        return oauth2AuthorizationCodeFlow.getAuthorizationUrl(tenantGuid, returnUrl)
     }
 
     @Tag(name = "Google Operations")

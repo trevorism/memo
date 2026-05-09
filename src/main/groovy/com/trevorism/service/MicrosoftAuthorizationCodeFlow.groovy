@@ -11,6 +11,7 @@ import jakarta.inject.Named
 @Named("microsoft")
 class MicrosoftAuthorizationCodeFlow implements Oauth2AuthorizationCodeFlow {
 
+    public static final String MEMOWAND_TENANT_GUID = "606db07c-3733-4697-88de-bb159773ea94"
     public static final String TENANT_ID = "d77da90e-329a-41c3-b8b7-f76b8bf71b06"
     public static final String CLIENT_ID = "6a213614-458e-4167-a7d7-7a0b099a6e5a"
     public static final String INSTANCE = "https://login.microsoftonline.com"
@@ -33,9 +34,9 @@ class MicrosoftAuthorizationCodeFlow implements Oauth2AuthorizationCodeFlow {
     @Override
     Oauth2Tokens exchangeCodeForProviderToken(String code, String state) {
         String clientSecret = propertiesProvider.getProperty("apiSecret")
-        String tokenUrl = "${INSTANCE}/${TENANT_ID}/oauth2/token"
+        String tokenUrl = "${INSTANCE}/${TENANT_ID}/oauth2/v2.0/token"
         Oauth2Response oauth2Response = Oauth2Utils.requestTokenFromOauthProvider(tokenUrl, CLIENT_ID, clientSecret, code, REDIRECT_URL)
-        String trevorismTenantGuid = Oauth2Utils.extractTenantIdFromState(state)
+        String trevorismTenantGuid = Oauth2Utils.extractTenantIdFromState(state) ?: MEMOWAND_TENANT_GUID
         return Oauth2Tokens.fromOauth2Response(oauth2Response, trevorismTenantGuid)
     }
 
