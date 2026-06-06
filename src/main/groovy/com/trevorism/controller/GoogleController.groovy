@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory
 class GoogleController {
 
     private static final Logger log = LoggerFactory.getLogger(GoogleController)
-    private static final String MEMOWAND_TENANT_GUID = "606db07c-3733-4697-88de-bb159773ea94"
+
 
     @Inject
     @Named("google")
