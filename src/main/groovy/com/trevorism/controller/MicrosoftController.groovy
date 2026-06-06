@@ -1,5 +1,6 @@
 package com.trevorism.controller
 
+import com.trevorism.MemowandConstants
 import com.trevorism.model.Oauth2Tokens
 import com.trevorism.service.Oauth2AuthorizationCodeFlow
 import com.trevorism.service.Oauth2Utils
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory
 class MicrosoftController {
 
     private static final Logger log = LoggerFactory.getLogger(MicrosoftController)
-    private static final String MEMOWAND_TENANT_GUID = "606db07c-3733-4697-88de-bb159773ea94"
 
     @Inject
     @Named("microsoft")
@@ -29,7 +29,7 @@ class MicrosoftController {
     @Operation(summary = "Gets a Microsoft login URL")
     @Get(value = "/", produces = MediaType.APPLICATION_JSON)
     String getMicrosoftLoginUrl(@QueryValue Optional<String> return_url) {
-        return getMicrosoftLoginUrl(MEMOWAND_TENANT_GUID, return_url)
+        return getMicrosoftLoginUrl(MemowandConstants.TENANT_GUID, return_url)
     }
 
     @Tag(name = "Microsoft Operations")
@@ -37,7 +37,7 @@ class MicrosoftController {
     @Get(value = "/{guid}", produces = MediaType.APPLICATION_JSON)
     String getMicrosoftLoginUrl(String guid, @QueryValue Optional<String> return_url) {
         String returnUrl = return_url.orElse("https://memowand.com")
-        String tenantGuid = guid ?: MEMOWAND_TENANT_GUID
+        String tenantGuid = guid ?: MemowandConstants.TENANT_GUID
         return oauth2AuthorizationCodeFlow.getAuthorizationUrl(tenantGuid, returnUrl)
     }
 

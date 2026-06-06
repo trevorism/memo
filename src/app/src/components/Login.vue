@@ -41,7 +41,7 @@
       </div>
     </div>
   </div>
-  <div class="grid justify-items-center">
+  <div class="grid justify-items-center hidden">
     <h4 class="text-large font-bold py-6">-- or --</h4>
     <button class="my-2 gsi-material-button" style="width:215px" @click="loginMicrosoft">
       <div class="gsi-material-button-state"></div>
