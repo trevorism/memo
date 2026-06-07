@@ -58,6 +58,15 @@ class MultipartHttpClient {
         return requestData(new HttpPost(CleanUrl.startWithHttps(url)), content, fileName, headersMap)
     }
 
+    String post(String url, InputStream content, String fileName) {
+        return post(url, content, fileName, new HashMap<>()).getValue()
+    }
+
+    HeadersHttpResponse post(String url, InputStream content, String fileName, Map<String, String> headers) {
+        Map<String, String> headersMap = this.createHeaderMap(headers)
+        return requestData(new HttpPost(CleanUrl.startWithHttps(url)), content, fileName, headersMap)
+    }
+
     String put(String url, byte[] content, String fileName) {
         return put(url, content, fileName, new HashMap<>()).getValue()
     }
@@ -99,6 +108,24 @@ class MultipartHttpClient {
     }
 
     private HeadersHttpResponse requestData(HttpUriRequestBase requestType, byte[] content, String fileName, Map<String, String> headers) {
+        try {
+            HttpEntity entity = MultipartEntityBuilder.create()
+                    .addBinaryBody("file", content, ContentType.APPLICATION_OCTET_STREAM, fileName)
+                    .build()
+
+            requestType.setEntity(entity)
+            for (Map.Entry<String, String> headerEntry : headers.entrySet()) {
+                requestType.setHeader(headerEntry.getKey(), headerEntry.getValue());
+            }
+            return httpClient.execute(requestType, new HeadersHttpClientResponseHandler())
+        } catch (HttpResponseException e) {
+            throw new InvalidRequestException(e, e.getStatusCode());
+        } catch (Exception ex) {
+            throw new InvalidRequestException(ex);
+        }
+    }
+
+    private HeadersHttpResponse requestData(HttpUriRequestBase requestType, InputStream content, String fileName, Map<String, String> headers) {
         try {
             HttpEntity entity = MultipartEntityBuilder.create()
                     .addBinaryBody("file", content, ContentType.APPLICATION_OCTET_STREAM, fileName)

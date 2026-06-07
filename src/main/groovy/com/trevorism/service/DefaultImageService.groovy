@@ -92,9 +92,9 @@ class DefaultImageService implements ImageService {
     private String storeImage(CompletedFileUpload file, String username) {
         String guid = UUID.randomUUID().toString()
         String url = "https://bucket.data.trevorism.com/object/memowand/${username}/${guid}-${file.metadata.fileName()}"
-        byte[] dataToSend = file.getBytes()
-        String result = new MultipartHttpClient(httpClient.obtainTokenStrategy).post(url, dataToSend, file.filename)
-        return result
+        return file.getInputStream().withCloseable { InputStream inputStream ->
+            new MultipartHttpClient(httpClient.obtainTokenStrategy).post(url, inputStream, file.filename)
+        }
     }
 
     private static String buildBucketObjectUrl(String bucketPath) {

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import { uploadImage as saveImage } from '../utils/galleryApi'
+import { compressImage } from '../utils/imageCompression'
 
 const router = useRouter()
 const uploading = ref(false)
@@ -55,7 +56,8 @@ async function uploadImage() {
   error.value = null
 
   try {
-    const response = await saveImage(selectedFile.value, getCurrentUserName() || 'Unknown')
+    const fileToUpload = await compressImage(selectedFile.value)
+    const response = await saveImage(fileToUpload, getCurrentUserName() || 'Unknown')
 
     if (response?.id) {
       success.value = true
