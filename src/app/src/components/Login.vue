@@ -82,6 +82,7 @@
 <script>
 import axios from 'axios'
 import {VaButton} from "vuestic-ui";
+import { isLoggedIn } from '../utils/auth'
 
 const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
 
@@ -97,8 +98,19 @@ export default {
       disabled: false
     }
   },
-  mounted() {
-    axios.get('api/authWarmup')
+  async mounted() {
+    if (isLoggedIn()) {
+      this.$router.replace({ name: 'Home' })
+      return
+    }
+
+    try {
+      await axios.get('api/authWarmup')
+    } finally {
+      if (isLoggedIn()) {
+        this.$router.replace({ name: 'Home' })
+      }
+    }
   },
   methods: {
     loginGoogle: function() {
@@ -147,7 +159,7 @@ export default {
           if (returnUrl) {
             window.location.href = returnUrl
           } else {
-            self.$router.push({ name: 'Welcome' })
+            self.$router.push({ name: 'Home' })
           }
         })
         .catch(() => {

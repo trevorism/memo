@@ -1,57 +1,51 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import axios from 'axios'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
+import { getCurrentUserName } from '../utils/auth'
 
-const userName = ref('')
+const router = useRouter()
+const loggingOut = ref(false)
+const userName = computed(() => getCurrentUserName())
 
 const displayName = computed(() => {
   const trimmed = userName.value?.trim()
   return trimmed ? trimmed : 'back'
 })
 
-function getCookieValue(name) {
-  const cookiePrefix = `${name}=`
-  const cookies = document.cookie ? document.cookie.split('; ') : []
+async function logout() {
+  if (loggingOut.value) return
 
-  for (const cookie of cookies) {
-    if (cookie.startsWith(cookiePrefix)) {
-      try {
-        return decodeURIComponent(cookie.substring(cookiePrefix.length))
-      } catch {
-        return ''
-      }
-    }
+  loggingOut.value = true
+  try {
+    await axios.post('api/logout/')
+  } finally {
+    loggingOut.value = false
+    await router.push({ name: 'Home' })
   }
-
-  return ''
 }
-
-function refreshUser() {
-  userName.value = getCookieValue('user_name')
-}
-
-onMounted(() => {
-  refreshUser()
-})
 </script>
 
 <template>
-  <div class="w-full">
+  <div class="w-full relative">
+    <VaButton class="logout-corner" color="danger" :disabled="loggingOut" @click="logout">
+      {{ loggingOut ? 'Logging out...' : 'Logout' }}
+    </VaButton>
     <main class="hero pt-6 md:pt-8 text-center px-4">
       <h1 class="text-3xl font-extrabold mb-2">Welcome {{ displayName }}</h1>
-      <p class="text-lg text-gray-600 mb-6 mx-auto max-w-2xl">
-        You are signed in to Memowand and ready to continue preserving memories together.
-      </p>
 
-      <div class="flex justify-center gap-3 flex-wrap">
-        <VaButton color="primary" class="px-6" to="/">Go to home</VaButton>
-        <VaButton color="secondary" class="px-6" to="/login">Switch account</VaButton>
-      </div>
     </main>
   </div>
 </template>
 
 <style scoped>
 .hero { padding: 1rem 1rem; }
+
+.logout-corner {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+}
 </style>
 

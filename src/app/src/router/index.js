@@ -2,17 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../components/Login.vue'
 import ForgotPassword from '../components/ForgotPassword.vue'
 import mixpanel from 'mixpanel-browser';
-import SplashPage from "../components/SplashPage.vue";
+import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
-import Welcome from "../components/Welcome.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'Splash',
-      component: SplashPage,
+      name: 'Home',
+      component: Home,
       props: true
     },
     {
@@ -31,12 +30,6 @@ const router = createRouter({
       path: '/forgot/',
       name: 'ForgotPassword',
       component: ForgotPassword,
-      props: true
-    },
-    {
-      path: '/welcome/',
-      name: 'Welcome',
-      component: Welcome,
       props: true
     }
   ]

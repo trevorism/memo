@@ -184,6 +184,7 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 
+
 /* keep content below this component from overlapping:
    consumers can also add `padding-top: 50px` to `main` if desired */
 .title-block {
