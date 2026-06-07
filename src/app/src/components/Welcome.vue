@@ -1,12 +1,10 @@
 <script setup>
 import axios from 'axios'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import Gallery from './Gallery.vue'
 
-const router = useRouter()
 const loggingOut = ref(false)
 const userName = computed(() => getCurrentUserName())
 
@@ -22,8 +20,8 @@ async function logout() {
   try {
     await axios.post('/api/logout/')
   } finally {
-    loggingOut.value = false
-    await router.push({ name: 'Home' })
+    // Hard navigation so the app re-reads cookies and renders the SplashPage.
+    window.location.assign('/')
   }
 }
 </script>

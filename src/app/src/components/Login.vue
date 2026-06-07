@@ -151,16 +151,14 @@ export default {
       this.errorMessage = ''
       axios.post('/api/login/' + TENANT_GUID, request)
         .then(() => {
-          const loggedInUser = self.username
-          this.disabled = false
-          this.mixpanel.identify(loggedInUser)
-          this.clear()
-          let returnUrl = self.$route.query.return_url
-          if (returnUrl) {
-            window.location.href = returnUrl
-          } else {
-            self.$router.push({ name: 'Home' })
+          try {
+            self.mixpanel.identify(self.username)
+          } catch {
+            // Analytics is best-effort; never block the login flow on it.
           }
+          // Hard navigation so the app re-reads the freshly set auth cookies.
+          const returnUrl = self.$route.query.return_url
+          window.location.assign(returnUrl || '/')
         })
         .catch(() => {
           this.errorMessage = 'Unable to login'
