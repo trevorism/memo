@@ -1,5 +1,6 @@
 package com.trevorism.controller
 
+import com.trevorism.MemowandConstants
 import com.trevorism.model.Oauth2Tokens
 import com.trevorism.service.Oauth2AuthorizationCodeFlow
 import com.trevorism.service.Oauth2Utils
@@ -29,7 +30,7 @@ class GoogleController {
     @Operation(summary = "Gets a Google login URL")
     @Get(value = "/", produces = MediaType.APPLICATION_JSON)
     String getGoogleLoginUrl(@QueryValue Optional<String> return_url) {
-        return getGoogleLoginUrl(MEMOWAND_TENANT_GUID, return_url)
+        return getGoogleLoginUrl(MemowandConstants.TENANT_GUID, return_url)
     }
 
     @Tag(name = "Google Operations")
@@ -37,7 +38,7 @@ class GoogleController {
     @Get(value = "/{guid}", produces = MediaType.APPLICATION_JSON)
     String getGoogleLoginUrl(String guid, @QueryValue Optional<String> return_url) {
         String returnUrl = return_url.orElse("https://memowand.com")
-        String tenantGuid = guid ?: MEMOWAND_TENANT_GUID
+        String tenantGuid = guid ?: MemowandConstants.TENANT_GUID
         return oauth2AuthorizationCodeFlow.getAuthorizationUrl(tenantGuid, returnUrl)
     }
 

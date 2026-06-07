@@ -82,7 +82,7 @@ export default {
       }
       this.disabled = true
       this.errorMessage = ''
-      axios.post('api/user', request)
+      axios.post('/api/user', request)
           .then(() => {
             this.disabled = false
             this.clearFields()

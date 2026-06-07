@@ -57,7 +57,7 @@ export default {
       this.disabled = true
       this.errorMessage = ''
       axios
-        .post('api/login/forgot', request)
+        .post('/api/login/forgot', request)
         .then(() => {
           this.disabled = false
           this.errorMessage = ''

@@ -4,6 +4,8 @@ import ForgotPassword from '../components/ForgotPassword.vue'
 import mixpanel from 'mixpanel-browser';
 import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
+import Upload from "../components/Upload.vue";
+import PhotoDetails from '../components/PhotoDetails.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +32,18 @@ const router = createRouter({
       path: '/forgot/',
       name: 'ForgotPassword',
       component: ForgotPassword,
+      props: true
+    },
+    {
+      path: '/upload/',
+      name: 'Upload',
+      component: Upload,
+      props: true
+    },
+    {
+      path: '/photo/:imageId/',
+      name: 'PhotoDetails',
+      component: PhotoDetails,
       props: true
     }
   ]

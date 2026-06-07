@@ -105,7 +105,7 @@ export default {
     }
 
     try {
-      await axios.get('api/authWarmup')
+      await axios.get('/api/authWarmup')
     } finally {
       if (isLoggedIn()) {
         this.$router.replace({ name: 'Home' })
@@ -115,7 +115,7 @@ export default {
   methods: {
     loginGoogle: function() {
       let returnUrl = this.$route.query.return_url
-      let url = 'api/google/' + TENANT_GUID
+      let url = '/api/google/' + TENANT_GUID
       if(returnUrl) {
         url += '?return_url=' + encodeURIComponent(returnUrl)
       }
@@ -129,7 +129,7 @@ export default {
     },
     loginMicrosoft: function() {
       let returnUrl = this.$route.query.return_url
-      let url = 'api/microsoft/' + TENANT_GUID
+      let url = '/api/microsoft/' + TENANT_GUID
       if(returnUrl) {
         url += '?return_url=' + encodeURIComponent(returnUrl)
       }
@@ -149,7 +149,7 @@ export default {
       }
       this.disabled = true
       this.errorMessage = ''
-      axios.post('api/login/' + TENANT_GUID, request)
+      axios.post('/api/login/' + TENANT_GUID, request)
         .then(() => {
           const loggedInUser = self.username
           this.disabled = false

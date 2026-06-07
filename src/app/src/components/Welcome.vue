@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
+import Gallery from './Gallery.vue'
 
 const router = useRouter()
 const loggingOut = ref(false)
@@ -19,7 +20,7 @@ async function logout() {
 
   loggingOut.value = true
   try {
-    await axios.post('api/logout/')
+    await axios.post('/api/logout/')
   } finally {
     loggingOut.value = false
     await router.push({ name: 'Home' })
@@ -34,8 +35,8 @@ async function logout() {
     </VaButton>
     <main class="hero pt-6 md:pt-8 text-center px-4">
       <h1 class="text-3xl font-extrabold mb-2">Welcome {{ displayName }}</h1>
-
     </main>
+    <Gallery />
   </div>
 </template>
 
