@@ -15,6 +15,8 @@ interface ImageService {
 
     Image createImage(CompletedFileUpload file, String uploadedBy, String caption)
 
+    Image createImage(InputStream inputStream, String filename, String uploadedBy, String caption)
+
     Image updateCaption(String id, String caption)
 
     byte[] getImageData(Image image)

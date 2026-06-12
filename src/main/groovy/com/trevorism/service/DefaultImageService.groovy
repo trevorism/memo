@@ -53,7 +53,14 @@ class DefaultImageService implements ImageService {
 
     @Override
     Image createImage(CompletedFileUpload file, String username, String caption) {
-        String bucketPath = storeImage(file, username)
+        return file.getInputStream().withCloseable { InputStream inputStream ->
+            createImage(inputStream, file.filename, username, caption)
+        }
+    }
+
+    @Override
+    Image createImage(InputStream inputStream, String filename, String username, String caption) {
+        String bucketPath = storeImage(inputStream, filename, username)
         Image image = new Image()
         image.username = username
         image.bucketPath = bucketPath
@@ -100,12 +107,30 @@ class DefaultImageService implements ImageService {
         return true
     }
 
-    private String storeImage(CompletedFileUpload file, String username) {
+    private String storeImage(InputStream inputStream, String filename, String username) {
         String guid = UUID.randomUUID().toString()
-        String url = "https://bucket.data.trevorism.com/object/memowand/${username}/${guid}-${file.metadata.fileName()}"
-        return file.getInputStream().withCloseable { InputStream inputStream ->
-            new MultipartHttpClient(httpClient.obtainTokenStrategy).post(url, inputStream, file.filename)
+        String safeName = sanitizeFilename(filename)
+        String safeUser = normalizeUsername(username)
+        String url = "https://bucket.data.trevorism.com/object/memowand/${safeUser}/${guid}-${safeName}"
+        return new MultipartHttpClient(httpClient.obtainTokenStrategy).post(url, inputStream, safeName)
+    }
+
+    private static String sanitizeFilename(String filename) {
+        String base = filename ?: 'image'
+        int slash = Math.max(base.lastIndexOf('/'), base.lastIndexOf('\\'))
+        if (slash >= 0) {
+            base = base.substring(slash + 1)
         }
+        // Bucket object paths must be URL-safe; replace spaces and other characters.
+        base = base.replaceAll(/[^A-Za-z0-9._-]/, '_')
+        return base ?: 'image'
+    }
+
+    private static String normalizeUsername(String username) {
+        // Used only for the URL-safe bucket path segment; the stored username is unchanged.
+        String base = (username ?: 'unknown').trim().toLowerCase()
+        base = base.replaceAll(/[^a-z0-9._-]/, '_')
+        return base ?: 'unknown'
     }
 
     private static String buildBucketObjectUrl(String bucketPath) {

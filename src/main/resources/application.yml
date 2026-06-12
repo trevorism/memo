@@ -3,6 +3,9 @@ micronaut:
     name: memo
   server:
     http-to-https-redirect: true
+    max-request-size: 64MB
+    multipart:
+      max-file-size: 64MB
   security:
     enabled: true
     redirect:

@@ -13,6 +13,8 @@ interface FolderService {
 
     Folder createFolder(String name, String username)
 
+    Folder createFolderFromZip(InputStream zipStream, String zipFilename, String username)
+
     Folder renameFolder(String id, String name)
 
     boolean deleteFolder(String id)

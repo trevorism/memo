@@ -16,8 +16,10 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Part
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
+import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.security.authentication.Authentication
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -107,6 +109,26 @@ class FolderController {
         } catch (Exception e) {
             log.error('Error creating folder', e)
             return HttpResponse.serverError()
+        }
+    }
+
+    @Tag(name = 'Folder Operations')
+    @Operation(summary = 'Create an album from a zip of images, named after the zip file **Secure')
+    @Post(value = '/zip', consumes = MediaType.MULTIPART_FORM_DATA, produces = MediaType.APPLICATION_JSON)
+    @Secure(value = Roles.USER)
+    HttpResponse uploadZip(@Part CompletedFileUpload file, @Part @Nullable String uploadedBy, @Nullable Authentication authentication) {
+        try {
+            String username = uploadedBy?.trim() ?: (authentication?.name ?: 'Unknown')
+            Folder folder = file.getInputStream().withCloseable { InputStream zipStream ->
+                folderService.createFolderFromZip(zipStream, file.filename, username)
+            }
+            if (!folder) {
+                return HttpResponse.badRequest([error: 'No images were found in that zip file.'])
+            }
+            return HttpResponse.created(populate(folder))
+        } catch (Exception e) {
+            log.error('Error creating album from zip', e)
+            return HttpResponse.serverError([error: e.message ?: 'Failed to create album from zip'])
         }
     }
 

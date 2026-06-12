@@ -62,6 +62,23 @@ async function createFolder(name) {
   return folder
 }
 
+async function uploadAlbumZip(file, uploadedBy) {
+  if (!file) {
+    throw new Error('file_required')
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('uploadedBy', (uploadedBy || '').trim() || 'Unknown')
+
+  const response = await axios.post(`${FOLDER_BASE}/zip`, formData)
+  const folder = mapFolder(response.data)
+  if (!folder) {
+    throw new Error('create_failed')
+  }
+  return folder
+}
+
 async function renameFolder(folderId, name) {
   const trimmed = (name || '').trim()
   if (!trimmed) {
@@ -96,6 +113,7 @@ export {
   listFolderImages,
   listFoldersForImage,
   createFolder,
+  uploadAlbumZip,
   renameFolder,
   deleteFolder,
   addImageToFolder,

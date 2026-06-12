@@ -1,9 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import { uploadImage as saveImage } from '../utils/galleryApi'
+import { uploadAlbumZip } from '../utils/folderApi'
 import { compressImage } from '../utils/imageCompression'
 
 const router = useRouter()
@@ -15,43 +16,66 @@ const preview = ref(null)
 const caption = ref('')
 
 const CAPTION_MAX = 280
+const MAX_IMAGE_MB = 10
+const MAX_ZIP_MB = 32
+
+function isZipFile(file) {
+  if (!file) return false
+  const type = (file.type || '').toLowerCase()
+  return (
+    type === 'application/zip' ||
+    type === 'application/x-zip-compressed' ||
+    type === 'application/x-zip' ||
+    /\.zip$/i.test(file.name || '')
+  )
+}
+
+const isZip = computed(() => isZipFile(selectedFile.value))
 
 function handleFileSelect(event) {
   const files = event.target.files
-  if (files && files.length > 0) {
-    const file = files[0]
+  if (!files || files.length === 0) return
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      error.value = 'Please select an image file'
-      selectedFile.value = null
-      preview.value = null
-      return
-    }
+  const file = files[0]
+  const zip = isZipFile(file)
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      error.value = 'File size must be less than 10MB'
-      selectedFile.value = null
-      preview.value = null
-      return
-    }
-
-    selectedFile.value = file
-    error.value = null
-
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      preview.value = e.target.result
-    }
-    reader.readAsDataURL(file)
+  // Validate file type (single image or a .zip of images)
+  if (!zip && !file.type.startsWith('image/')) {
+    error.value = 'Please select an image or a .zip file'
+    selectedFile.value = null
+    preview.value = null
+    return
   }
+
+  // Validate file size
+  const maxMb = zip ? MAX_ZIP_MB : MAX_IMAGE_MB
+  if (file.size > maxMb * 1024 * 1024) {
+    error.value = `File size must be less than ${maxMb}MB`
+    selectedFile.value = null
+    preview.value = null
+    return
+  }
+
+  selectedFile.value = file
+  error.value = null
+
+  // Zips have no image preview
+  if (zip) {
+    preview.value = null
+    return
+  }
+
+  // Create preview for single images
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    preview.value = e.target.result
+  }
+  reader.readAsDataURL(file)
 }
 
 async function uploadImage() {
   if (!selectedFile.value) {
-    error.value = 'Please select an image'
+    error.value = 'Please select an image or a .zip file'
     return
   }
 
@@ -59,19 +83,34 @@ async function uploadImage() {
   error.value = null
 
   try {
-    const fileToUpload = await compressImage(selectedFile.value)
-    const response = await saveImage(fileToUpload, getCurrentUserName() || 'Unknown', caption.value)
+    if (isZip.value) {
+      const folder = await uploadAlbumZip(selectedFile.value, getCurrentUserName() || 'Unknown')
+      if (folder?.id) {
+        success.value = true
+        // Open the newly created album
+        setTimeout(() => {
+          router.push({ name: 'FolderDetails', params: { folderId: folder.id } })
+        }, 1200)
+      }
+    } else {
+      const fileToUpload = await compressImage(selectedFile.value)
+      const response = await saveImage(fileToUpload, getCurrentUserName() || 'Unknown', caption.value)
 
-    if (response?.id) {
-      success.value = true
-      // Redirect back to welcome page after 2 seconds
-      setTimeout(() => {
-        router.push({ name: 'Home' })
-      }, 2000)
+      if (response?.id) {
+        success.value = true
+        // Redirect back to welcome page after 2 seconds
+        setTimeout(() => {
+          router.push({ name: 'Home' })
+        }, 2000)
+      }
     }
   } catch (err) {
-    error.value = err.response?.data?.message || err.message || 'Failed to upload image'
-    console.error('Error uploading image:', err)
+    error.value =
+      err.response?.data?.error ||
+      err.response?.data?.message ||
+      err.message ||
+      'Failed to upload'
+    console.error('Error uploading:', err)
   } finally {
     uploading.value = false
   }
@@ -97,13 +136,15 @@ function clearFile() {
         <VaButton preset="plain" color="secondary" @click="goBack" class="mb-4">
           ← Back
         </VaButton>
-        <h1 class="text-3xl font-bold">Upload Photo</h1>
-        <p class="text-gray-600 mt-2">Share a photo with the gallery</p>
+        <h1 class="text-3xl font-bold">{{ isZip ? 'Create Album from Zip' : 'Upload Photo' }}</h1>
+        <p class="text-gray-600 mt-2">
+          Share a photo with the gallery, or upload a .zip to create an album from its images.
+        </p>
       </div>
 
       <!-- Success Message -->
       <div v-if="success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-        Photo uploaded successfully! Redirecting...
+        {{ isZip ? 'Album created! Opening it now...' : 'Photo uploaded successfully! Redirecting...' }}
       </div>
 
       <!-- Error Message -->
@@ -119,12 +160,18 @@ function clearFile() {
           <img :src="preview" alt="Preview" class="max-w-full h-auto max-h-96 rounded-lg" />
         </div>
 
+        <!-- Zip notice -->
+        <div v-else-if="isZip" class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+          📦 This will create an album named <strong>{{ selectedFile.name.replace(/\.zip$/i, '') }}</strong>
+          from the images inside the zip.
+        </div>
+
         <!-- File Input -->
         <div class="mb-6">
-          <label class="block text-sm font-semibold text-gray-700 mb-2"> Select Image </label>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"> Select Image or Zip </label>
           <input
             type="file"
-            accept="image/*"
+            accept="image/*,.zip"
             @change="handleFileSelect"
             :disabled="uploading"
             class="block w-full text-sm text-gray-500
@@ -135,7 +182,9 @@ function clearFile() {
               hover:file:bg-blue-100
               disabled:opacity-50"
           />
-          <p class="text-xs text-gray-500 mt-2">Supported formats: JPG, PNG, GIF, WebP (max 10MB)</p>
+          <p class="text-xs text-gray-500 mt-2">
+            Images: JPG, PNG, GIF, WebP (max {{ MAX_IMAGE_MB }}MB) · Album zip: .zip (max {{ MAX_ZIP_MB }}MB)
+          </p>
         </div>
 
         <!-- Selected File Info -->
@@ -150,7 +199,7 @@ function clearFile() {
         </div>
 
         <!-- Caption -->
-        <div class="mb-6">
+        <div v-if="!isZip" class="mb-6">
           <label for="caption" class="block text-sm font-semibold text-gray-700 mb-2">
             Caption <span class="font-normal text-gray-400">(optional)</span>
           </label>
@@ -178,7 +227,7 @@ function clearFile() {
             color="primary"
             size="medium"
           >
-            {{ uploading ? 'Uploading...' : 'Upload Photo' }}
+            {{ uploading ? (isZip ? 'Creating album...' : 'Uploading...') : (isZip ? 'Create Album' : 'Upload Photo') }}
           </VaButton>
         </div>
       </div>
