@@ -25,13 +25,15 @@ class CacheControlFilter {
         String path = request.path
         if (path.startsWith("/assets/")) {
             setCacheControl(response, IMMUTABLE)
-        } else if (isHtml(response)) {
+        } else if (acceptsHtml(request)) {
+            // Decide off the request: the response content type is not yet populated when this
+            // filter runs for static/streamed file responses, so isHtml(response) would miss.
             setCacheControl(response, NO_CACHE)
         }
     }
 
-    private static boolean isHtml(MutableHttpResponse<?> response) {
-        response.getContentType().map { it.name.startsWith(MediaType.TEXT_HTML) }.orElse(false)
+    private static boolean acceptsHtml(HttpRequest<?> request) {
+        request.getHeaders().accept().stream().anyMatch { it.name.contains(MediaType.TEXT_HTML) }
     }
 
     private static void setCacheControl(MutableHttpResponse<?> response, String value) {
