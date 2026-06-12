@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import { getImage, listComments, addComment, deleteComment, updateCaption, deleteImage } from '../utils/galleryApi'
+import FolderPickerModal from './FolderPickerModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,7 @@ const newComment = ref('')
 const imageLoadFailed = ref(false)
 const deleting = ref(false)
 const showDeleteModal = ref(false)
+const showFolderPicker = ref(false)
 const editingCaption = ref(false)
 const captionDraft = ref('')
 const savingCaption = ref(false)
@@ -242,6 +244,14 @@ async function submitComment() {
                 {{ new Date(image.uploadedDate).toLocaleString() }}
               </span>
               <VaButton
+                preset="secondary"
+                color="primary"
+                size="small"
+                @click="showFolderPicker = true"
+              >
+                Add to folder
+              </VaButton>
+              <VaButton
                 v-if="canDelete"
                 preset="secondary"
                 color="danger"
@@ -316,6 +326,8 @@ async function submitComment() {
         This will permanently delete this photo and its comments. This action cannot be undone.
       </p>
     </VaModal>
+
+    <FolderPickerModal v-model="showFolderPicker" :image-id="route.params.imageId" />
   </div>
 </template>
 

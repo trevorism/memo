@@ -4,6 +4,7 @@ import com.trevorism.model.Image
 import com.trevorism.secure.Roles
 import com.trevorism.secure.Secure
 import com.trevorism.service.CommentService
+import com.trevorism.service.FolderService
 import com.trevorism.service.ImageService
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpResponse
@@ -28,6 +29,9 @@ class ImageController {
 
     @Inject
     CommentService commentService
+
+    @Inject
+    FolderService folderService
 
     @Tag(name = "Image Operations")
     @Operation(summary = "Get all recently uploaded images, newest first **Secure")
@@ -164,6 +168,7 @@ class ImageController {
             }
             imageService.deleteImage(id)
             commentService.deleteCommentsForImage(id)
+            folderService.removeImageFromAllFolders(id)
             return HttpResponse.noContent()
         } catch (Exception e) {
             log.error("Error deleting image {}", id, e)

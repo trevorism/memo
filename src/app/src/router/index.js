@@ -6,6 +6,7 @@ import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
 import Upload from "../components/Upload.vue";
 import PhotoDetails from '../components/PhotoDetails.vue'
+import FolderDetails from '../components/FolderDetails.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,12 @@ const router = createRouter({
       path: '/photo/:imageId/',
       name: 'PhotoDetails',
       component: PhotoDetails,
+      props: true
+    },
+    {
+      path: '/folder/:folderId/',
+      name: 'FolderDetails',
+      component: FolderDetails,
       props: true
     }
   ]

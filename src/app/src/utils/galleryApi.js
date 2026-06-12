@@ -127,4 +127,4 @@ async function deleteImage(imageId) {
   return true
 }
 
-export { listImages, getImage, listComments, addComment, deleteComment, uploadImage, updateCaption, deleteImage }
+export { listImages, getImage, listComments, addComment, deleteComment, uploadImage, updateCaption, deleteImage, mapImage, rawImageUrl }
