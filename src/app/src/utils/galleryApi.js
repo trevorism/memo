@@ -18,6 +18,7 @@ function mapImage(raw) {
     url,
     thumbnailUrl: url,
     uploadedBy: raw.username || raw.uploadedBy || 'Unknown',
+    caption: raw.caption || '',
     commentCount: raw.commentCount ?? 0,
     uploadedDate: raw.createdDate || raw.uploadedDate || null
   }
@@ -89,7 +90,7 @@ async function addComment(imageId, commentPayload) {
   return mapComment(response.data)
 }
 
-async function uploadImage(file, uploadedBy) {
+async function uploadImage(file, uploadedBy, caption = '') {
   if (!file) {
     throw new Error('file_required')
   }
@@ -97,9 +98,21 @@ async function uploadImage(file, uploadedBy) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('uploadedBy', (uploadedBy || '').trim() || 'Unknown')
+  formData.append('caption', (caption || '').trim())
 
   const response = await axios.post(`${IMAGE_BASE}/`, formData)
   return mapImage(response.data)
+}
+
+async function updateCaption(imageId, caption) {
+  const response = await axios.put(`${IMAGE_BASE}/${encodeURIComponent(imageId)}`, {
+    caption: (caption || '').trim()
+  })
+  const image = mapImage(response.data)
+  if (!image) {
+    throw new Error('not_found')
+  }
+  return image
 }
 
 async function deleteImage(imageId) {
@@ -107,4 +120,4 @@ async function deleteImage(imageId) {
   return true
 }
 
-export { listImages, getImage, listComments, addComment, uploadImage, deleteImage }
+export { listImages, getImage, listComments, addComment, uploadImage, updateCaption, deleteImage }

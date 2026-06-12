@@ -128,6 +128,28 @@ class ImageController {
     }
 
     @Tag(name = "Image Operations")
+    @Operation(summary = "Update an image's caption by id (owner or admin only) **Secure")
+    @Put(value = "/{id}", produces = MediaType.APPLICATION_JSON, consumes = MediaType.APPLICATION_JSON)
+    @Secure(value = Roles.USER)
+    HttpResponse<Image> updateImage(String id, @Body Map<String, String> body, @Nullable Authentication authentication) {
+        try {
+            Image image = imageService.getImage(id)
+            if (!image) {
+                return HttpResponse.notFound()
+            }
+            if (!isOwnerOrAdmin(image, authentication)) {
+                return HttpResponse.status(HttpStatus.FORBIDDEN)
+            }
+            Image updated = imageService.updateCaption(id, body?.caption)
+            updated.commentCount = commentService.countComments(id)
+            return HttpResponse.ok(updated)
+        } catch (Exception e) {
+            log.error("Error updating image {}", id, e)
+            return HttpResponse.serverError()
+        }
+    }
+
+    @Tag(name = "Image Operations")
     @Operation(summary = "Delete an image and its comments by id (owner or admin only) **Secure")
     @Delete(value = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
@@ -166,9 +188,9 @@ class ImageController {
     @Operation(summary = "Upload a new image **Secure")
     @Post(value = "/", produces = MediaType.APPLICATION_JSON, consumes = MediaType.MULTIPART_FORM_DATA)
     @Secure(value = Roles.USER)
-    HttpResponse<Image> uploadImage(@Part CompletedFileUpload file, @Part String uploadedBy) {
+    HttpResponse<Image> uploadImage(@Part CompletedFileUpload file, @Part String uploadedBy, @Part @Nullable String caption) {
         try {
-            Image image = imageService.createImage(file, uploadedBy)
+            Image image = imageService.createImage(file, uploadedBy, caption)
             return HttpResponse.created(image)
         } catch (Exception e) {
             log.error("Error uploading image", e)

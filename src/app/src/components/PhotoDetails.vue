@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
-import { getImage, listComments, addComment, deleteImage } from '../utils/galleryApi'
+import { getImage, listComments, addComment, updateCaption, deleteImage } from '../utils/galleryApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,11 +19,17 @@ const newComment = ref('')
 const imageLoadFailed = ref(false)
 const deleting = ref(false)
 const showDeleteModal = ref(false)
+const editingCaption = ref(false)
+const captionDraft = ref('')
+const savingCaption = ref(false)
 
-const canDelete = computed(() => {
+const isOwner = computed(() => {
   const me = (getCurrentUserName() || '').trim().toLowerCase()
   return !!me && (image.value?.uploadedBy || '').toLowerCase() === me
 })
+
+const canDelete = isOwner
+const canEditCaption = isOwner
 
 const sortedComments = computed(() => {
   return [...comments.value].sort((a, b) => {
@@ -71,6 +77,34 @@ async function loadComments() {
 
 function goBack() {
   router.push({ name: 'Home' })
+}
+
+function startEditCaption() {
+  captionDraft.value = image.value?.caption || ''
+  editingCaption.value = true
+}
+
+function cancelEditCaption() {
+  editingCaption.value = false
+  captionDraft.value = ''
+}
+
+async function saveCaption() {
+  if (savingCaption.value) return
+
+  savingCaption.value = true
+  error.value = null
+
+  try {
+    const updated = await updateCaption(route.params.imageId, captionDraft.value)
+    image.value = { ...image.value, caption: updated.caption }
+    editingCaption.value = false
+  } catch (err) {
+    error.value = err.response?.data?.message || err.message || 'Unable to update caption.'
+    console.error('Error updating caption:', err)
+  } finally {
+    savingCaption.value = false
+  }
 }
 
 function requestDelete() {
@@ -142,6 +176,38 @@ async function submitComment() {
         </div>
 
         <div class="p-5">
+          <div v-if="editingCaption" class="mb-4">
+            <textarea
+              v-model="captionDraft"
+              rows="3"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              placeholder="Add a caption..."
+            ></textarea>
+            <div class="mt-2 flex justify-end gap-2">
+              <VaButton preset="secondary" color="secondary" :disabled="savingCaption" @click="cancelEditCaption">
+                Cancel
+              </VaButton>
+              <VaButton color="primary" :loading="savingCaption" @click="saveCaption">
+                Save
+              </VaButton>
+            </div>
+          </div>
+          <div v-else class="mb-4 flex items-start justify-between gap-3">
+            <p v-if="image.caption" class="text-base text-gray-800 whitespace-pre-wrap">
+              {{ image.caption }}
+            </p>
+            <p v-else-if="canEditCaption" class="text-base text-gray-400 italic">No caption yet.</p>
+            <VaButton
+              v-if="canEditCaption"
+              preset="plain"
+              color="primary"
+              size="small"
+              class="shrink-0"
+              @click="startEditCaption"
+            >
+              {{ image.caption ? 'Edit' : 'Add caption' }}
+            </VaButton>
+          </div>
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <p class="text-sm text-gray-500">Uploaded by</p>

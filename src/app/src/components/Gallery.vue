@@ -158,6 +158,13 @@ function markImageFailed(imageId) {
             />
           </button>
           <div class="p-3">
+            <p
+              v-if="image.caption"
+              class="text-sm text-gray-700 mb-2 line-clamp-2"
+              :title="image.caption"
+            >
+              {{ image.caption }}
+            </p>
             <div class="flex items-center justify-between gap-2">
               <div class="min-w-0">
                 <p class="font-semibold text-sm truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>

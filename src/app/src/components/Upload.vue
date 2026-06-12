@@ -12,6 +12,9 @@ const error = ref(null)
 const success = ref(false)
 const selectedFile = ref(null)
 const preview = ref(null)
+const caption = ref('')
+
+const CAPTION_MAX = 280
 
 function handleFileSelect(event) {
   const files = event.target.files
@@ -57,7 +60,7 @@ async function uploadImage() {
 
   try {
     const fileToUpload = await compressImage(selectedFile.value)
-    const response = await saveImage(fileToUpload, getCurrentUserName() || 'Unknown')
+    const response = await saveImage(fileToUpload, getCurrentUserName() || 'Unknown', caption.value)
 
     if (response?.id) {
       success.value = true
@@ -81,6 +84,7 @@ function goBack() {
 function clearFile() {
   selectedFile.value = null
   preview.value = null
+  caption.value = ''
   error.value = null
 }
 </script>
@@ -143,6 +147,23 @@ function clearFile() {
             <span class="font-semibold">Size:</span>
             {{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB
           </p>
+        </div>
+
+        <!-- Caption -->
+        <div class="mb-6">
+          <label for="caption" class="block text-sm font-semibold text-gray-700 mb-2">
+            Caption <span class="font-normal text-gray-400">(optional)</span>
+          </label>
+          <textarea
+            id="caption"
+            v-model="caption"
+            rows="2"
+            :maxlength="CAPTION_MAX"
+            :disabled="uploading"
+            placeholder="Add a caption for this photo..."
+            class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm disabled:opacity-50"
+          ></textarea>
+          <p class="text-xs text-gray-400 mt-1 text-right">{{ caption.length }}/{{ CAPTION_MAX }}</p>
         </div>
 
         <!-- Action Buttons -->

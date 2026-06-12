@@ -52,12 +52,23 @@ class DefaultImageService implements ImageService {
     }
 
     @Override
-    Image createImage(CompletedFileUpload file, String username) {
+    Image createImage(CompletedFileUpload file, String username, String caption) {
         String bucketPath = storeImage(file, username)
         Image image = new Image()
         image.username = username
         image.bucketPath = bucketPath
+        image.caption = caption?.trim()
         return repository.create(image)
+    }
+
+    @Override
+    Image updateCaption(String id, String caption) {
+        Image image = repository.get(id)
+        if (!image) {
+            return null
+        }
+        image.caption = caption?.trim()
+        return repository.update(id, image)
     }
 
     @Override
