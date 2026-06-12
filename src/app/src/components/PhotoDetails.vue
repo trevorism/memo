@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
-import { getImage, listComments, addComment, updateCaption, deleteImage } from '../utils/galleryApi'
+import { getImage, listComments, addComment, deleteComment, updateCaption, deleteImage } from '../utils/galleryApi'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +15,7 @@ const loadingComments = ref(false)
 const error = ref(null)
 const commentsError = ref(null)
 const submittingComment = ref(false)
+const deletingCommentId = ref(null)
 const newComment = ref('')
 const imageLoadFailed = ref(false)
 const deleting = ref(false)
@@ -40,6 +41,28 @@ const sortedComments = computed(() => {
 })
 
 const commentCount = computed(() => comments.value.length)
+
+function canDeleteComment(comment) {
+  const me = (getCurrentUserName() || '').trim().toLowerCase()
+  return !!me && (comment?.author || '').toLowerCase() === me
+}
+
+async function removeComment(comment) {
+  if (!comment?.id || deletingCommentId.value) return
+
+  deletingCommentId.value = comment.id
+  commentsError.value = null
+
+  try {
+    await deleteComment(route.params.imageId, comment.id)
+    comments.value = comments.value.filter((c) => c.id !== comment.id)
+  } catch (err) {
+    commentsError.value = 'Unable to delete comment.'
+    console.error('Error deleting comment:', err)
+  } finally {
+    deletingCommentId.value = null
+  }
+}
 
 onMounted(async () => {
   await Promise.all([fetchImage(), loadComments()])
@@ -258,9 +281,21 @@ async function submitComment() {
               <article v-for="comment in sortedComments" :key="comment.id" class="p-3 border border-gray-200 rounded-md">
                 <div class="flex items-center justify-between gap-3 mb-1">
                   <p class="font-semibold text-sm">{{ comment.author || 'Anonymous' }}</p>
-                  <p v-if="comment.createdDate" class="text-xs text-gray-500">
-                    {{ new Date(comment.createdDate).toLocaleString() }}
-                  </p>
+                  <div class="flex items-center gap-2">
+                    <p v-if="comment.createdDate" class="text-xs text-gray-500">
+                      {{ new Date(comment.createdDate).toLocaleString() }}
+                    </p>
+                    <VaButton
+                      v-if="canDeleteComment(comment)"
+                      preset="plain"
+                      color="danger"
+                      size="small"
+                      :loading="deletingCommentId === comment.id"
+                      @click="removeComment(comment)"
+                    >
+                      Delete
+                    </VaButton>
+                  </div>
                 </div>
                 <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ comment.text }}</p>
               </article>

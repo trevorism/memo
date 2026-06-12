@@ -57,6 +57,26 @@ class DefaultCommentService implements CommentService {
     }
 
     @Override
+    ImageComment getComment(String commentId) {
+        if (!commentId) {
+            return null
+        }
+        repository.get(commentId)
+    }
+
+    @Override
+    boolean deleteComment(String commentId) {
+        if (!commentId) {
+            return false
+        }
+        if (!repository.get(commentId)) {
+            return false
+        }
+        repository.delete(commentId)
+        return true
+    }
+
+    @Override
     int countComments(String imageId) {
         if (!imageId) {
             return 0

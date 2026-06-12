@@ -104,6 +104,13 @@ async function uploadImage(file, uploadedBy, caption = '') {
   return mapImage(response.data)
 }
 
+async function deleteComment(imageId, commentId) {
+  await axios.delete(
+    `${COMMENT_BASE}/${encodeURIComponent(imageId)}/comments/${encodeURIComponent(commentId)}`
+  )
+  return true
+}
+
 async function updateCaption(imageId, caption) {
   const response = await axios.put(`${IMAGE_BASE}/${encodeURIComponent(imageId)}`, {
     caption: (caption || '').trim()
@@ -120,4 +127,4 @@ async function deleteImage(imageId) {
   return true
 }
 
-export { listImages, getImage, listComments, addComment, uploadImage, updateCaption, deleteImage }
+export { listImages, getImage, listComments, addComment, deleteComment, uploadImage, updateCaption, deleteImage }
