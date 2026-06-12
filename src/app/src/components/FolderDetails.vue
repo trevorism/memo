@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
+import { canManageFolder } from '../utils/auth'
 import { listImages } from '../utils/galleryApi'
 import { getFolder, listFolderImages, removeImageFromFolder, addImageToFolder, deleteFolder } from '../utils/folderApi'
 
@@ -36,6 +37,8 @@ const candidateImages = computed(() => {
   const present = new Set(images.value.map((i) => i.id))
   return allImages.value.filter((i) => !present.has(i.id))
 })
+
+const canManage = computed(() => !!folder.value && canManageFolder(folder.value))
 
 onMounted(async () => {
   await fetchData()
@@ -168,6 +171,7 @@ async function performDeleteFolder() {
         <div v-if="folder" class="flex items-center gap-2">
           <VaButton color="primary" @click="openAddModal">Add photos</VaButton>
           <VaButton
+            v-if="canManage"
             preset="secondary"
             color="danger"
             :loading="deletingFolder"

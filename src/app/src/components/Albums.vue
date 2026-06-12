@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
+import { canManageFolder } from '../utils/auth'
 import { listFolders, createFolder, deleteFolder } from '../utils/folderApi'
 
 const router = useRouter()
@@ -151,6 +152,7 @@ function markCoverFailed(folderId) {
                 color="info"
               />
               <VaButton
+                v-if="canManageFolder(folder)"
                 preset="secondary"
                 color="danger"
                 size="small"

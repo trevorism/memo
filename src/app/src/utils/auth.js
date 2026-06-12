@@ -24,3 +24,16 @@ export function isLoggedIn() {
   return !!getCurrentUserName()?.trim()
 }
 
+export function isAdmin() {
+  return getCookieValue('admin')?.trim().toLowerCase() === 'true'
+}
+
+// Mirrors the backend's creator-or-admin check used to authorize folder deletion.
+export function canManageFolder(folder) {
+  if (isAdmin()) {
+    return true
+  }
+  const me = getCurrentUserName()?.trim().toLowerCase()
+  return !!me && (folder?.username || '').toLowerCase() === me
+}
+
