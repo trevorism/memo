@@ -3,7 +3,7 @@
     <div class="auth-glow" aria-hidden="true"></div>
     <div class="auth-card app-card">
       <h2 class="text-2xl font-extrabold text-ink text-center">Create your account</h2>
-      <p class="text-muted text-sm text-center mt-1 mb-6">Join <span class="brand-wordmark">Memowand</span></p>
+      <p class="text-muted text-sm text-center mt-1 mb-6">Join <RouterLink to="/" class="brand-wordmark brand-link">Memowand</RouterLink></p>
 
       <va-form ref="registerForm">
         <va-input

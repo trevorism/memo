@@ -8,11 +8,10 @@ import { VaButton } from 'vuestic-ui'
     <main class="hero">
       <p class="eyebrow">Invitation-only · Private</p>
       <h1 class="splash-title">
-        Welcome to <span class="brand-wordmark">Memowand</span>
+        Welcome to <RouterLink to="/" class="brand-wordmark brand-link">Memowand</RouterLink>
       </h1>
       <p class="lede">
-        A private gallery for families and groups — a calm, beautiful place to store,
-        share, and talk about your photos and videos.
+        A private gallery for families and groups — a place to store, share, and talk about your photos.
       </p>
       <p class="sub-lede">Sign in or register to join and start preserving memories together.</p>
 

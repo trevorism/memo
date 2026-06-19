@@ -3,7 +3,7 @@
     <div class="auth-glow" aria-hidden="true"></div>
     <div id="login" class="auth-card app-card">
       <h2 class="text-2xl font-extrabold text-ink text-center">Welcome back</h2>
-      <p class="text-muted text-sm text-center mt-1 mb-6">Sign in to <span class="brand-wordmark">Memowand</span></p>
+      <p class="text-muted text-sm text-center mt-1 mb-6">Sign in to <RouterLink to="/" class="brand-wordmark brand-link">Memowand</RouterLink></p>
 
       <va-form ref="loginForm" tag="form" @submit.prevent="invokeButton">
         <va-input

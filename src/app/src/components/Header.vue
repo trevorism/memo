@@ -172,14 +172,14 @@ onBeforeUnmount(() => {
         <span class="user-name">{{ userName }}</span>
       </div>
 
-      <div class="brand">
+      <RouterLink to="/" class="brand brand-link" aria-label="Memowand home">
         <canvas ref="canvasRef" aria-hidden="true" class="corner-canvas" />
         <div class="title-block">
           <span class="header brand-wordmark">Memowand</span>
           <span class="sub-heading">Private Gallery</span>
         </div>
         <canvas ref="rightCanvasRef" aria-hidden="true" class="corner-canvas" />
-      </div>
+      </RouterLink>
 
       <!-- Wide screens: inline actions -->
       <div class="bar-actions">
@@ -205,7 +205,7 @@ onBeforeUnmount(() => {
 
       <!-- Narrow screens: collapsible menu -->
       <div class="bar-menu">
-        <VaDropdown placement="bottom-end" :offset="[8, 0]" stick-to-edges>
+        <VaDropdown placement="bottom-end" :offset="[16, 0]" stick-to-edges>
           <template #anchor>
             <VaButton preset="plain" icon="menu" aria-label="Open menu" />
           </template>
@@ -352,6 +352,9 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
   min-width: 11rem;
   padding: 0.5rem;
+  /* Vuestic gives the floating panel an auto z-index of 1; lift it above the
+     fixed header (z-index 10000) so it isn't clipped by the top bar. */
+  z-index: 10001 !important;
 }
 
 .menu-user {
