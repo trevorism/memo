@@ -1,1 +1,206 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --c-canvas: #f6f7f9;
+  --c-surface: #ffffff;
+  --c-surface-2: #eef1f4;
+  --c-subtle: #e3e7ec;
+  --c-ink: #0f172a;
+  --c-body: #334155;
+  --c-muted: #64748b;
+  --c-accent: #0d9488;
+  --c-accent-2: #06b6d4;
+  --c-accent-contrast: #ffffff;
+
+  --header-h: 64px;
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.18);
+  --shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.06), 0 18px 40px -18px rgba(15, 23, 42, 0.28);
+  --ring-accent: 0 0 0 3px color-mix(in srgb, var(--c-accent) 35%, transparent);
+}
+
+.dark {
+  --c-canvas: #0b0d12;
+  --c-surface: #14171d;
+  --c-surface-2: #1c2027;
+  --c-subtle: rgba(255, 255, 255, 0.09);
+  --c-ink: #f1f5f9;
+  --c-body: #cbd5e1;
+  --c-muted: #94a3b8;
+  --c-accent: #2dd4bf;
+  --c-accent-2: #22d3ee;
+  --c-accent-contrast: #04231f;
+
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.5), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  --ring-accent: 0 0 0 3px color-mix(in srgb, var(--c-accent) 40%, transparent);
+}
+
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-subtle: var(--c-subtle);
+  --color-ink: var(--c-ink);
+  --color-body: var(--c-body);
+  --color-muted: var(--c-muted);
+  --color-accent: var(--c-accent);
+  --color-accent-2: var(--c-accent-2);
+  --color-accent-contrast: var(--c-accent-contrast);
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+@layer base {
+  html {
+    background-color: var(--c-canvas);
+  }
+
+  body {
+    @apply bg-canvas text-body font-sans antialiased;
+    min-height: 100vh;
+  }
+
+  /* Smooth, contained theme transition (only the things that should cross-fade). */
+  body,
+  .app-card,
+  .glass-bar,
+  .app-input,
+  .app-select {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--c-accent) 30%, transparent);
+    color: var(--c-ink);
+  }
+
+  /* Themed scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--c-muted) 45%, transparent) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--c-muted) 45%, transparent);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--c-muted) 70%, transparent);
+    background-clip: padding-box;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reusable component classes
+--------------------------------------------------------------------------- */
+@layer components {
+  .app-card {
+    @apply bg-surface border border-subtle rounded-2xl;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .app-card-interactive {
+    @apply bg-surface border border-subtle rounded-2xl overflow-hidden;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .app-card-interactive:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lift);
+    border-color: color-mix(in srgb, var(--c-accent) 35%, var(--c-subtle));
+  }
+
+  /* Native form controls themed to match Vuestic inputs */
+  .app-input,
+  .app-select {
+    @apply w-full bg-surface-2 text-ink rounded-xl border border-subtle px-3.5 py-2.5 text-sm;
+    outline: none;
+  }
+  .app-input::placeholder {
+    color: var(--c-muted);
+  }
+  .app-input:focus,
+  .app-select:focus {
+    border-color: var(--c-accent);
+    box-shadow: var(--ring-accent);
+  }
+  .app-input:disabled,
+  .app-select:disabled {
+    @apply opacity-50;
+  }
+
+  /* Frosted sticky top bar */
+  .glass-bar {
+    background: color-mix(in srgb, var(--c-surface) 72%, transparent);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    border-bottom: 1px solid var(--c-subtle);
+  }
+
+  .brand-wordmark {
+    background-image: linear-gradient(100deg, var(--c-accent), var(--c-accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .accent-gradient {
+    background-image: linear-gradient(120deg, var(--c-accent), var(--c-accent-2));
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-ink tracking-tight;
+  }
+
+  /* Loading skeleton shimmer */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--c-surface-2);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--c-muted) 18%, transparent),
+      transparent
+    );
+    animation: shimmer 1.4s infinite;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+  .app-card-interactive,
+  body,
+  .glass-bar,
+  .app-input,
+  .app-select {
+    transition: none;
+  }
+}

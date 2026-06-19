@@ -1,15 +1,19 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import { listImages, deleteImage } from '../utils/galleryApi'
 
+// `visibility` is driven by the unified toolbar in Welcome.vue.
+const props = defineProps({
+  visibility: { type: String, default: 'all' }
+})
+
 const router = useRouter()
 const images = ref([])
 const loading = ref(true)
 const error = ref(null)
-const selectedFilter = ref('all')
 const currentUserName = computed(() => getCurrentUserName()?.trim() || '')
 const failedImageIds = ref({})
 const deletingImageIds = ref({})
@@ -53,13 +57,16 @@ onMounted(async () => {
   await fetchImages()
 })
 
+// Refetch whenever the toolbar switches between all / mine / others.
+watch(() => props.visibility, fetchImages)
+
 async function fetchImages() {
   loading.value = true
   error.value = null
 
   try {
     images.value = await listImages({
-      visibility: selectedFilter.value,
+      visibility: props.visibility,
       uploadedBy: currentUserName.value,
       limit: 50
     })
@@ -79,73 +86,58 @@ function navigateToPhoto(imageId) {
   router.push({ name: 'PhotoDetails', params: { imageId } })
 }
 
-async function onFilterChange() {
-  await fetchImages()
-}
-
 function markImageFailed(imageId) {
   failedImageIds.value = { ...failedImageIds.value, [imageId]: true }
 }
 </script>
 
 <template>
-  <div class="gallery-container px-4 py-8">
-    <div class="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-6">
-      <h2 class="text-2xl font-bold">Photo Gallery</h2>
-      <div class="flex items-center gap-3">
-        <label for="gallery-filter" class="text-sm text-gray-600">Show</label>
-        <select
-          id="gallery-filter"
-          v-model="selectedFilter"
-          @change="onFilterChange"
-          class="px-3 py-2 border border-gray-300 rounded-md text-sm"
-        >
-          <option value="all">All uploads</option>
-          <option value="mine">My uploads</option>
-          <option value="others">Others' uploads</option>
-        </select>
-        <VaButton color="primary" @click="navigateToUpload" size="medium">
-          Upload Photo
-        </VaButton>
+  <div class="gallery-container px-4 pt-4 pb-10">
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div v-for="n in 6" :key="n" class="app-card overflow-hidden">
+        <div class="skeleton aspect-[4/3]"></div>
+        <div class="p-4 space-y-2">
+          <div class="skeleton h-4 w-2/3 rounded"></div>
+          <div class="skeleton h-3 w-1/3 rounded"></div>
+        </div>
       </div>
     </div>
 
-    <div v-if="loading" class="text-center py-12">
-      <p class="text-gray-500">Loading photos...</p>
-    </div>
-
-    <div v-else-if="error" class="text-center py-12">
+    <div v-else-if="error" class="text-center py-16">
       <p class="text-red-500">{{ error }}</p>
-      <VaButton class="mt-4" @click="fetchImages" color="warning">
+      <VaButton class="mt-4" @click="fetchImages" color="warning" round>
         Try Again
       </VaButton>
     </div>
 
-    <div v-else-if="!hasImages" class="text-center py-12">
-      <p class="text-gray-500 text-lg mb-4">No photos yet</p>
-      <p class="text-gray-400 mb-6">
-        {{ selectedFilter === 'all' ? 'Be the first to upload a photo!' : 'Try a different filter.' }}
+    <div v-else-if="!hasImages" class="text-center py-16">
+      <div class="empty-icon accent-gradient">
+        <span class="material-icons">photo_library</span>
+      </div>
+      <p class="text-ink text-lg font-semibold mb-1">No photos yet</p>
+      <p class="text-muted mb-6">
+        {{ props.visibility === 'all' ? 'Be the first to upload a photo!' : 'Try a different filter.' }}
       </p>
-      <VaButton color="primary" @click="navigateToUpload" size="large">
+      <VaButton color="primary" gradient round @click="navigateToUpload" size="large">
         Upload Your First Photo
       </VaButton>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <article
         v-for="image in images"
         :key="image.id"
-        class="bg-white rounded-md border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
+        class="app-card-interactive group"
       >
           <button
             type="button"
-            class="relative w-full h-40 bg-gray-200 overflow-hidden text-left"
+            class="relative w-full aspect-[4/3] bg-surface-2 overflow-hidden text-left"
             @click="navigateToPhoto(image.id)"
             :title="`Open photo from ${image.uploadedBy}`"
           >
             <div
               v-if="failedImageIds[image.id]"
-              class="w-full h-full flex items-center justify-center text-xs text-gray-600 px-2 text-center"
+              class="w-full h-full flex items-center justify-center text-xs text-muted px-2 text-center"
             >
               Image unavailable (open details)
             </div>
@@ -153,22 +145,22 @@ function markImageFailed(imageId) {
               v-else
               :src="image.thumbnailUrl || image.url"
               :alt="'Photo from ' + image.uploadedBy"
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               @error="markImageFailed(image.id)"
             />
           </button>
-          <div class="p-3">
+          <div class="p-4">
             <p
               v-if="image.caption"
-              class="text-sm text-gray-700 mb-2 line-clamp-2"
+              class="text-sm text-body mb-2 line-clamp-2"
               :title="image.caption"
             >
               {{ image.caption }}
             </p>
             <div class="flex items-center justify-between gap-2">
               <div class="min-w-0">
-                <p class="font-semibold text-sm truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
-                <span v-if="image.uploadedDate" class="text-xs text-gray-500">
+                <p class="font-semibold text-sm text-ink truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
+                <span v-if="image.uploadedDate" class="text-xs text-muted">
                   {{ new Date(image.uploadedDate).toLocaleDateString() }}
                 </span>
               </div>
@@ -212,6 +204,21 @@ function markImageFailed(imageId) {
 .gallery-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--c-accent) 70%, transparent);
+}
+.empty-icon .material-icons {
+  color: var(--c-accent-contrast);
+  font-size: 34px;
 }
 </style>
 

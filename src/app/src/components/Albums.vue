@@ -91,43 +91,49 @@ async function performDelete() {
 function markCoverFailed(folderId) {
   failedCoverIds.value = { ...failedCoverIds.value, [folderId]: true }
 }
+
+// Lets the unified toolbar in Welcome.vue trigger folder creation.
+function openCreateModal() {
+  showCreateModal.value = true
+}
+
+defineExpose({ openCreateModal })
 </script>
 
 <template>
-  <div class="albums-container px-4 py-8">
-    <div class="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-6">
-      <h2 class="text-2xl font-bold">Albums</h2>
-      <VaButton color="primary" @click="showCreateModal = true" size="medium">
-        New Folder
-      </VaButton>
+  <div class="albums-container px-4 pt-4 pb-10">
+    <div v-if="loading" class="grid grid-cols-2 md:grid-cols-3 gap-5">
+      <div v-for="n in 6" :key="n" class="app-card overflow-hidden">
+        <div class="skeleton aspect-[4/3]"></div>
+        <div class="p-4"><div class="skeleton h-4 w-2/3 rounded"></div></div>
+      </div>
     </div>
 
-    <div v-if="loading" class="text-center py-12">
-      <p class="text-gray-500">Loading folders...</p>
-    </div>
-
-    <div v-else-if="error" class="text-center py-12">
+    <div v-else-if="error" class="text-center py-16">
       <p class="text-red-500">{{ error }}</p>
-      <VaButton class="mt-4" @click="fetchFolders" color="warning">Try Again</VaButton>
+      <VaButton class="mt-4" @click="fetchFolders" color="warning" round>Try Again</VaButton>
     </div>
 
-    <div v-else-if="!hasFolders" class="text-center py-12">
-      <p class="text-gray-500 text-lg mb-4">No folders yet</p>
-      <p class="text-gray-400 mb-6">Create a folder to start organizing photos.</p>
-      <VaButton color="primary" @click="showCreateModal = true" size="large">
+    <div v-else-if="!hasFolders" class="text-center py-16">
+      <div class="empty-icon accent-gradient">
+        <span class="material-icons">folder_open</span>
+      </div>
+      <p class="text-ink text-lg font-semibold mb-1">No folders yet</p>
+      <p class="text-muted mb-6">Create a folder to start organizing photos.</p>
+      <VaButton color="primary" gradient round @click="showCreateModal = true" size="large">
         Create Your First Folder
       </VaButton>
     </div>
 
-    <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-5">
       <article
         v-for="folder in folders"
         :key="folder.id"
-        class="bg-white rounded-md border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
+        class="app-card-interactive group"
       >
         <button
           type="button"
-          class="relative w-full h-40 bg-gray-200 overflow-hidden text-left flex items-center justify-center"
+          class="relative w-full aspect-[4/3] bg-surface-2 overflow-hidden text-left flex items-center justify-center"
           @click="openFolder(folder.id)"
           :title="`Open ${folder.name}`"
         >
@@ -135,16 +141,16 @@ function markCoverFailed(folderId) {
             v-if="folder.coverUrl && !failedCoverIds[folder.id]"
             :src="folder.coverUrl"
             :alt="folder.name"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             @error="markCoverFailed(folder.id)"
           />
-          <div v-else class="text-4xl text-gray-400">📁</div>
+          <span v-else class="material-icons text-5xl text-muted">folder</span>
         </button>
-        <div class="p-3">
+        <div class="p-4">
           <div class="flex items-center justify-between gap-2">
             <div class="min-w-0">
-              <p class="font-semibold text-sm truncate" :title="folder.name">{{ folder.name }}</p>
-              <span class="text-xs text-gray-500">by {{ folder.username }}</span>
+              <p class="font-semibold text-sm text-ink truncate" :title="folder.name">{{ folder.name }}</p>
+              <span class="text-xs text-muted">by {{ folder.username }}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <VaBadge
@@ -181,7 +187,7 @@ function markCoverFailed(folderId) {
         placeholder="Folder name"
         :disabled="creating"
         @keyup.enter="createNewFolder"
-        class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+        class="app-input"
       />
     </VaModal>
 
@@ -204,5 +210,20 @@ function markCoverFailed(folderId) {
 .albums-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--c-accent) 70%, transparent);
+}
+.empty-icon .material-icons {
+  color: var(--c-accent-contrast);
+  font-size: 34px;
 }
 </style>

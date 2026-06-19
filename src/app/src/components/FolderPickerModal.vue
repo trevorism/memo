@@ -116,17 +116,17 @@ function close() {
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="min-w-[280px]">
-      <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-3 text-sm">
+      <div v-if="error" class="bg-red-500/10 border border-red-500/40 text-red-500 px-3 py-2 rounded-lg mb-3 text-sm">
         {{ error }}
       </div>
 
-      <div v-if="loading" class="text-gray-500 py-6 text-center text-sm">Loading folders...</div>
+      <div v-if="loading" class="text-muted py-6 text-center text-sm">Loading folders...</div>
 
       <div v-else>
-        <p v-if="!folders.length" class="text-gray-500 text-sm mb-3">
+        <p v-if="!folders.length" class="text-muted text-sm mb-3">
           No folders yet. Create one below.
         </p>
-        <ul v-else class="mb-4 max-h-64 overflow-y-auto divide-y divide-gray-100">
+        <ul v-else class="mb-4 max-h-64 overflow-y-auto divide-y divide-[color:var(--c-subtle)]">
           <li
             v-for="folder in folders"
             :key="folder.id"
@@ -138,27 +138,29 @@ function close() {
               :checked="!!memberIds[folder.id]"
               :disabled="!!busyIds[folder.id]"
               @change="toggleFolder(folder)"
-              class="h-4 w-4"
+              class="h-4 w-4 accent-[color:var(--c-accent)]"
             />
-            <label :for="`folder-${folder.id}`" class="flex-1 text-sm cursor-pointer truncate">
+            <label :for="`folder-${folder.id}`" class="flex-1 text-sm text-body cursor-pointer truncate">
               {{ folder.name }}
             </label>
-            <span class="text-xs text-gray-400 shrink-0">{{ folder.imageCount }}</span>
+            <span class="text-xs text-muted shrink-0">{{ folder.imageCount }}</span>
           </li>
         </ul>
 
-        <div class="flex items-center gap-2 border-t border-gray-100 pt-3">
+        <div class="flex items-center gap-2 border-t border-subtle pt-3">
           <input
             v-model="newFolderName"
             type="text"
             placeholder="New folder name"
             :disabled="creating"
             @keyup.enter="createAndAdd"
-            class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm disabled:opacity-50"
+            class="app-input flex-1"
           />
           <VaButton
             size="small"
             color="primary"
+            gradient
+            round
             :disabled="!newFolderName.trim() || creating"
             :loading="creating"
             @click="createAndAdd"
@@ -169,7 +171,7 @@ function close() {
       </div>
 
       <div class="flex justify-end mt-5">
-        <VaButton preset="secondary" @click="close">Done</VaButton>
+        <VaButton preset="secondary" round @click="close">Done</VaButton>
       </div>
     </div>
   </VaModal>

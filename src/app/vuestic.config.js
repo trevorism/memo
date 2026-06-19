@@ -12,6 +12,43 @@ export default {
 		},
 	},
 	colors: {
+		// Light/dark presets are kept in sync with the design tokens in src/style.css.
+		// Switched at runtime via useColors().applyPreset() (see src/composables/useTheme.js).
+		currentPresetName: 'light',
+		presets: {
+			light: {
+				primary: '#0d9488',
+				secondary: '#64748b',
+				success: '#16a34a',
+				info: '#0891b2',
+				danger: '#e11d48',
+				warning: '#d97706',
+				backgroundPrimary: '#ffffff',
+				backgroundSecondary: '#f6f7f9',
+				backgroundElement: '#eef1f4',
+				backgroundBorder: '#e3e7ec',
+				textPrimary: '#0f172a',
+				textInverted: '#ffffff',
+				shadow: 'rgba(15, 23, 42, 0.18)',
+				focus: '#0d9488',
+			},
+			dark: {
+				primary: '#2dd4bf',
+				secondary: '#94a3b8',
+				success: '#22c55e',
+				info: '#22d3ee',
+				danger: '#fb7185',
+				warning: '#fbbf24',
+				backgroundPrimary: '#14171d',
+				backgroundSecondary: '#0b0d12',
+				backgroundElement: '#1c2027',
+				backgroundBorder: 'rgba(255, 255, 255, 0.12)',
+				textPrimary: '#f1f5f9',
+				textInverted: '#04231f',
+				shadow: 'rgba(0, 0, 0, 0.6)',
+				focus: '#2dd4bf',
+			},
+		},
 		variables: {
 			black: '#000',
 			white: '#fff',

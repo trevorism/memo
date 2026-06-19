@@ -177,18 +177,24 @@ async function submitComment() {
 <template>
   <div class="photo-page px-4 py-8">
     <div class="max-w-5xl mx-auto">
-      <VaButton preset="plain" color="secondary" class="mb-4" @click="goBack">Back to gallery</VaButton>
+      <VaButton preset="plain" color="secondary" class="mb-4" @click="goBack">← Back to gallery</VaButton>
 
-      <div v-if="loading" class="text-center py-12 text-gray-500">Loading photo...</div>
+      <div v-if="loading" class="app-card overflow-hidden">
+        <div class="skeleton w-full h-[55vh]"></div>
+        <div class="p-5 space-y-3">
+          <div class="skeleton h-5 w-1/2 rounded"></div>
+          <div class="skeleton h-4 w-1/3 rounded"></div>
+        </div>
+      </div>
 
       <div v-else-if="error" class="text-center py-12">
         <p class="text-red-500 mb-4">{{ error }}</p>
-        <VaButton color="primary" @click="goBack">Return to Gallery</VaButton>
+        <VaButton color="primary" gradient round @click="goBack">Return to Gallery</VaButton>
       </div>
 
-      <div v-else-if="image" class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <div class="w-full bg-gray-100">
-          <div v-if="imageLoadFailed" class="w-full h-80 flex items-center justify-center text-gray-600">
+      <div v-else-if="image" class="app-card overflow-hidden">
+        <div class="w-full bg-surface-2">
+          <div v-if="imageLoadFailed" class="w-full h-80 flex items-center justify-center text-muted">
             Image unavailable
           </div>
           <img
@@ -205,23 +211,23 @@ async function submitComment() {
             <textarea
               v-model="captionDraft"
               rows="3"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              class="app-input"
               placeholder="Add a caption..."
             ></textarea>
             <div class="mt-2 flex justify-end gap-2">
-              <VaButton preset="secondary" color="secondary" :disabled="savingCaption" @click="cancelEditCaption">
+              <VaButton preset="secondary" color="secondary" round :disabled="savingCaption" @click="cancelEditCaption">
                 Cancel
               </VaButton>
-              <VaButton color="primary" :loading="savingCaption" @click="saveCaption">
+              <VaButton color="primary" gradient round :loading="savingCaption" @click="saveCaption">
                 Save
               </VaButton>
             </div>
           </div>
           <div v-else class="mb-4 flex items-start justify-between gap-3">
-            <p v-if="image.caption" class="text-base text-gray-800 whitespace-pre-wrap">
+            <p v-if="image.caption" class="text-base text-ink whitespace-pre-wrap">
               {{ image.caption }}
             </p>
-            <p v-else-if="canEditCaption" class="text-base text-gray-400 italic">No caption yet.</p>
+            <p v-else-if="canEditCaption" class="text-base text-muted italic">No caption yet.</p>
             <VaButton
               v-if="canEditCaption"
               preset="plain"
@@ -235,18 +241,20 @@ async function submitComment() {
           </div>
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
-              <p class="text-sm text-gray-500">Uploaded by</p>
-              <p class="font-semibold">{{ image.uploadedBy || 'Unknown' }}</p>
+              <p class="text-sm text-muted">Uploaded by</p>
+              <p class="font-semibold text-ink">{{ image.uploadedBy || 'Unknown' }}</p>
             </div>
             <div class="flex items-center gap-3">
               <VaBadge :text="`${commentCount} comments`" color="info" />
-              <span v-if="image.uploadedDate" class="text-sm text-gray-500">
+              <span v-if="image.uploadedDate" class="text-sm text-muted">
                 {{ new Date(image.uploadedDate).toLocaleString() }}
               </span>
               <VaButton
                 preset="secondary"
                 color="primary"
                 size="small"
+                round
+                icon="create_new_folder"
                 @click="showFolderPicker = true"
               >
                 Add to folder
@@ -265,34 +273,34 @@ async function submitComment() {
           </div>
         </div>
 
-        <section class="px-5 pb-5 border-t border-gray-100">
+        <section class="px-5 pb-5 border-t border-subtle">
           <div class="pt-4">
-            <h3 class="text-xl font-semibold mb-4">Comments</h3>
+            <h3 class="text-xl font-semibold text-ink mb-4">Comments</h3>
 
             <div class="mb-4">
               <textarea
                 v-model="newComment"
                 rows="3"
-                class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                class="app-input"
                 placeholder="Write a comment..."
               ></textarea>
               <div class="mt-2 flex justify-end">
-                <VaButton color="primary" :disabled="!newComment.trim()" :loading="submittingComment" @click="submitComment">
+                <VaButton color="primary" gradient round :disabled="!newComment.trim()" :loading="submittingComment" @click="submitComment">
                   Post Comment
                 </VaButton>
               </div>
             </div>
 
-            <p v-if="loadingComments" class="text-gray-500">Loading comments...</p>
+            <p v-if="loadingComments" class="text-muted">Loading comments...</p>
             <p v-else-if="commentsError" class="text-red-500">{{ commentsError }}</p>
-            <p v-else-if="sortedComments.length === 0" class="text-gray-500">No comments yet.</p>
+            <p v-else-if="sortedComments.length === 0" class="text-muted">No comments yet.</p>
 
             <div v-else class="space-y-3">
-              <article v-for="comment in sortedComments" :key="comment.id" class="p-3 border border-gray-200 rounded-md">
+              <article v-for="comment in sortedComments" :key="comment.id" class="p-3 border border-subtle rounded-xl bg-surface-2">
                 <div class="flex items-center justify-between gap-3 mb-1">
-                  <p class="font-semibold text-sm">{{ comment.author || 'Anonymous' }}</p>
+                  <p class="font-semibold text-sm text-ink">{{ comment.author || 'Anonymous' }}</p>
                   <div class="flex items-center gap-2">
-                    <p v-if="comment.createdDate" class="text-xs text-gray-500">
+                    <p v-if="comment.createdDate" class="text-xs text-muted">
                       {{ new Date(comment.createdDate).toLocaleString() }}
                     </p>
                     <VaButton
@@ -307,7 +315,7 @@ async function submitComment() {
                     </VaButton>
                   </div>
                 </div>
-                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ comment.text }}</p>
+                <p class="text-sm text-body whitespace-pre-wrap">{{ comment.text }}</p>
               </article>
             </div>
           </div>
@@ -333,8 +341,8 @@ async function submitComment() {
 
 <style scoped>
 .photo-page {
-  min-height: calc(100vh - 80px);
-  background-color: #f7f7f7;
+  min-height: calc(100vh - var(--header-h));
+  background-color: var(--c-canvas);
 }
 </style>
 

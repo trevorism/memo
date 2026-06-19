@@ -1,11 +1,11 @@
 <template>
-  <div id="forgot" class="grid justify-items-center">
-    <div class="grid justify-items-center">
-      <h2 class="text-xl font-bold py-6 my-6">Forgot Password on Memowand</h2>
-      <div class="mb-2 ml-2">We will send you a link to reset your password.</div>
-    </div>
-    <va-form class="border-2 rounded-md w-80" autofocus>
-      <div class="mx-4 mt-4 mb-4">
+  <div id="forgot" class="auth-wrap">
+    <div class="auth-glow" aria-hidden="true"></div>
+    <div class="auth-card app-card">
+      <h2 class="text-2xl font-extrabold text-ink text-center">Forgot password?</h2>
+      <p class="text-muted text-sm text-center mt-1 mb-6">We'll send you a link to reset it.</p>
+
+      <va-form autofocus>
         <va-input
           type="email"
           class="mb-6 w-full"
@@ -16,20 +16,20 @@
           v-model="email"
         >
         </va-input>
-        <div class="w-full flex justify-between">
-          <va-button color="success" :disabled="disabled" @click="invokeButton">
-            <va-inner-loading :loading="disabled"> Submit </va-inner-loading>
+        <div class="flex gap-3">
+          <va-button color="primary" gradient round class="flex-1" :disabled="disabled" @click="invokeButton">
+            <va-inner-loading :loading="disabled"> Send link </va-inner-loading>
           </va-button>
-
-          <va-button color="danger" :to="{ name: 'Login' }"> Cancel </va-button>
+          <va-button preset="secondary" round :to="{ name: 'Login' }"> Cancel </va-button>
         </div>
+      </va-form>
+
+      <div v-if="successMessage !== ''" class="text-center text-body mt-5">
+        {{ successMessage }}
+        <va-chip flat class="mt-2" :to="{ name: 'Login' }">Login</va-chip>
       </div>
-    </va-form>
-    <div v-if="successMessage !== ''" class="w-80 text-center">
-      {{ successMessage }}
-      <va-chip flat class="grid justify-items-center basis-1/4" :to="{ name: 'Login' }">Login</va-chip>
+      <va-alert v-if="errorMessage.length > 0" class="mt-5 text-center" color="danger">{{ errorMessage }}</va-alert>
     </div>
-    <va-alert v-if="errorMessage.length > 0" class="w-80 text-center" color="danger">{{ errorMessage }}</va-alert>
   </div>
 </template>
 
@@ -74,12 +74,33 @@ export default {
 </script>
 
 <style scoped>
-.loginBorder {
-  border: #dddddd 1px solid;
-  background: #efefef;
+.auth-wrap {
+  position: relative;
+  min-height: calc(100vh - var(--header-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2rem 1rem;
 }
 
-.formWidth {
-  width: 400px;
+.auth-glow {
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 60%;
+  background:
+    radial-gradient(40% 60% at 30% 20%, color-mix(in srgb, var(--c-accent) 26%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 75% 25%, color-mix(in srgb, var(--c-accent-2) 24%, transparent), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 24rem;
+  padding: 2rem;
 }
 </style>

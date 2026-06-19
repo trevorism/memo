@@ -163,17 +163,18 @@ async function performDeleteFolder() {
       <VaButton preset="plain" color="secondary" @click="goBack" class="mb-4">← Back</VaButton>
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-3">
         <div>
-          <h2 class="text-2xl font-bold">{{ folder ? folder.name : 'Folder' }}</h2>
-          <p v-if="folder" class="text-gray-500 text-sm mt-1">
+          <h2 class="section-title">{{ folder ? folder.name : 'Folder' }}</h2>
+          <p v-if="folder" class="text-muted text-sm mt-1">
             {{ folder.imageCount }} {{ folder.imageCount === 1 ? 'photo' : 'photos' }} · by {{ folder.username }}
           </p>
         </div>
         <div v-if="folder" class="flex items-center gap-2">
-          <VaButton color="primary" @click="openAddModal">Add photos</VaButton>
+          <VaButton color="primary" gradient round icon="add_photo_alternate" @click="openAddModal">Add photos</VaButton>
           <VaButton
             v-if="canManage"
             preset="secondary"
             color="danger"
+            round
             :loading="deletingFolder"
             @click="showDeleteFolderModal = true"
           >
@@ -183,36 +184,45 @@ async function performDeleteFolder() {
       </div>
     </div>
 
-    <div v-if="loading" class="text-center py-12">
-      <p class="text-gray-500">Loading photos...</p>
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div v-for="n in 6" :key="n" class="app-card overflow-hidden">
+        <div class="skeleton aspect-[4/3]"></div>
+        <div class="p-4 space-y-2">
+          <div class="skeleton h-4 w-2/3 rounded"></div>
+          <div class="skeleton h-3 w-1/3 rounded"></div>
+        </div>
+      </div>
     </div>
 
-    <div v-else-if="error" class="text-center py-12">
+    <div v-else-if="error" class="text-center py-16">
       <p class="text-red-500">{{ error }}</p>
-      <VaButton class="mt-4" @click="fetchData" color="warning">Try Again</VaButton>
+      <VaButton class="mt-4" @click="fetchData" color="warning" round>Try Again</VaButton>
     </div>
 
-    <div v-else-if="!hasImages" class="text-center py-12">
-      <p class="text-gray-500 text-lg mb-4">No photos in this folder</p>
-      <p class="text-gray-400 mb-6">Add photos to start filling this album.</p>
-      <VaButton color="primary" size="large" @click="openAddModal">Add Photos</VaButton>
+    <div v-else-if="!hasImages" class="text-center py-16">
+      <div class="empty-icon accent-gradient">
+        <span class="material-icons">add_photo_alternate</span>
+      </div>
+      <p class="text-ink text-lg font-semibold mb-1">No photos in this folder</p>
+      <p class="text-muted mb-6">Add photos to start filling this album.</p>
+      <VaButton color="primary" gradient round size="large" @click="openAddModal">Add Photos</VaButton>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <article
         v-for="image in images"
         :key="image.id"
-        class="bg-white rounded-md border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
+        class="app-card-interactive group"
       >
         <button
           type="button"
-          class="relative w-full h-40 bg-gray-200 overflow-hidden text-left"
+          class="relative w-full aspect-[4/3] bg-surface-2 overflow-hidden text-left"
           @click="navigateToPhoto(image.id)"
           :title="`Open photo from ${image.uploadedBy}`"
         >
           <div
             v-if="failedImageIds[image.id]"
-            class="w-full h-full flex items-center justify-center text-xs text-gray-600 px-2 text-center"
+            class="w-full h-full flex items-center justify-center text-xs text-muted px-2 text-center"
           >
             Image unavailable (open details)
           </div>
@@ -220,22 +230,22 @@ async function performDeleteFolder() {
             v-else
             :src="image.thumbnailUrl || image.url"
             :alt="'Photo from ' + image.uploadedBy"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             @error="markImageFailed(image.id)"
           />
         </button>
-        <div class="p-3">
+        <div class="p-4">
           <p
             v-if="image.caption"
-            class="text-sm text-gray-700 mb-2 line-clamp-2"
+            class="text-sm text-body mb-2 line-clamp-2"
             :title="image.caption"
           >
             {{ image.caption }}
           </p>
           <div class="flex items-center justify-between gap-2">
             <div class="min-w-0">
-              <p class="font-semibold text-sm truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
-              <span v-if="image.uploadedDate" class="text-xs text-gray-500">
+              <p class="font-semibold text-sm text-ink truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
+              <span v-if="image.uploadedDate" class="text-xs text-muted">
                 {{ new Date(image.uploadedDate).toLocaleDateString() }}
               </span>
             </div>
@@ -287,14 +297,16 @@ async function performDeleteFolder() {
 
     <VaModal v-model="showAddModal" title="Add photos to album" hide-default-actions>
       <div class="min-w-[300px]">
-        <div v-if="addError" class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-3 text-sm">
+        <div v-if="addError" class="bg-red-500/10 border border-red-500/40 text-red-500 px-3 py-2 rounded-lg mb-3 text-sm">
           {{ addError }}
         </div>
 
-        <div v-if="loadingAll" class="text-gray-500 py-6 text-center text-sm">Loading photos...</div>
+        <div v-if="loadingAll" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          <div v-for="n in 8" :key="n" class="skeleton aspect-square rounded-lg"></div>
+        </div>
 
         <div v-else>
-          <p v-if="!candidateImages.length" class="text-gray-500 text-sm py-4 text-center">
+          <p v-if="!candidateImages.length" class="text-muted text-sm py-4 text-center">
             All photos are already in this album.
           </p>
           <div v-else class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[60vh] overflow-y-auto">
@@ -302,14 +314,14 @@ async function performDeleteFolder() {
               v-for="image in candidateImages"
               :key="image.id"
               type="button"
-              class="relative aspect-square bg-gray-200 rounded overflow-hidden disabled:opacity-50"
+              class="group relative aspect-square bg-surface-2 rounded-lg overflow-hidden disabled:opacity-50"
               :disabled="!!addingIds[image.id]"
               :title="image.caption || `Add photo from ${image.uploadedBy}`"
               @click="addToFolder(image)"
             >
               <div
                 v-if="failedAddIds[image.id]"
-                class="w-full h-full flex items-center justify-center text-[10px] text-gray-600 px-1 text-center"
+                class="w-full h-full flex items-center justify-center text-[10px] text-muted px-1 text-center"
               >
                 Unavailable
               </div>
@@ -317,22 +329,24 @@ async function performDeleteFolder() {
                 v-else
                 :src="image.thumbnailUrl || image.url"
                 :alt="'Photo from ' + image.uploadedBy"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 @error="markAddFailed(image.id)"
               />
               <div
                 v-if="addingIds[image.id]"
-                class="absolute inset-0 flex items-center justify-center bg-white/60 text-xs"
+                class="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xs"
               >
                 Adding...
               </div>
-              <div class="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow">＋</div>
+              <div class="absolute bottom-1 right-1 accent-gradient text-[color:var(--c-accent-contrast)] rounded-full w-6 h-6 flex items-center justify-center shadow">
+                <span class="material-icons text-base">add</span>
+              </div>
             </button>
           </div>
         </div>
 
         <div class="flex justify-end mt-5">
-          <VaButton preset="secondary" @click="showAddModal = false">Done</VaButton>
+          <VaButton preset="secondary" round @click="showAddModal = false">Done</VaButton>
         </div>
       </div>
     </VaModal>
@@ -343,5 +357,20 @@ async function performDeleteFolder() {
 .folder-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--c-accent) 70%, transparent);
+}
+.empty-icon .material-icons {
+  color: var(--c-accent-contrast);
+  font-size: 34px;
 }
 </style>

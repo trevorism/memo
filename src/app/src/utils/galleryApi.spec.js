@@ -25,6 +25,7 @@ describe('galleryApi', () => {
         url: '/api/image/abc/raw',
         thumbnailUrl: '/api/image/abc/raw',
         uploadedBy: 'trevor',
+        caption: '',
         commentCount: 3,
         uploadedDate: '2026-01-01T00:00:00Z'
       }

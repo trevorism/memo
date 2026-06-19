@@ -1,5 +1,29 @@
 <script setup lang="js">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import axios from 'axios'
+import { VaButton, VaDropdown, VaDropdownContent, VaIcon } from 'vuestic-ui'
+import { useTheme } from '../composables/useTheme'
+import { isLoggedIn, getCurrentUserName } from '../utils/auth'
+
+const { theme, toggleTheme } = useTheme()
+
+// Evaluated once at mount — login/logout both hard-navigate, so the header
+// always remounts with fresh cookie state.
+const loggedIn = isLoggedIn()
+const userName = getCurrentUserName()?.trim() || ''
+const loggingOut = ref(false)
+
+async function logout() {
+  if (loggingOut.value) return
+
+  loggingOut.value = true
+  try {
+    await axios.post('/api/logout/')
+  } finally {
+    // Hard navigation so the app re-reads cookies and renders the SplashPage.
+    window.location.assign('/')
+  }
+}
 
 const canvasRef = ref(null)
 const rightCanvasRef = ref(null)
@@ -141,72 +165,221 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <canvas ref="canvasRef" aria-hidden="true" class="corner-canvas left" />
-  <canvas ref="rightCanvasRef" aria-hidden="true" class="corner-canvas right" />
-  <div class="top-bar" role="banner">
-    <div class="title-block">
-      <header class="header">Memowand</header>
-      <div class="sub-heading">Private Gallery</div>
+  <div class="top-bar glass-bar" role="banner">
+    <div class="bar-inner">
+      <div v-if="loggedIn" class="bar-user" :title="userName">
+        <VaIcon name="account_circle" size="1.1rem" class="user-icon" />
+        <span class="user-name">{{ userName }}</span>
+      </div>
+
+      <div class="brand">
+        <canvas ref="canvasRef" aria-hidden="true" class="corner-canvas" />
+        <div class="title-block">
+          <span class="header brand-wordmark">Memowand</span>
+          <span class="sub-heading">Private Gallery</span>
+        </div>
+        <canvas ref="rightCanvasRef" aria-hidden="true" class="corner-canvas" />
+      </div>
+
+      <!-- Wide screens: inline actions -->
+      <div class="bar-actions">
+        <VaButton
+          v-if="loggedIn"
+          preset="secondary"
+          color="danger"
+          size="small"
+          round
+          :disabled="loggingOut"
+          @click="logout"
+        >
+          {{ loggingOut ? 'Logging out...' : 'Logout' }}
+        </VaButton>
+        <VaButton
+          class="theme-toggle"
+          preset="plain"
+          :icon="theme === 'dark' ? 'light_mode' : 'dark_mode'"
+          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          @click="toggleTheme"
+        />
+      </div>
+
+      <!-- Narrow screens: collapsible menu -->
+      <div class="bar-menu">
+        <VaDropdown placement="bottom-end" :offset="[8, 0]" stick-to-edges>
+          <template #anchor>
+            <VaButton preset="plain" icon="menu" aria-label="Open menu" />
+          </template>
+          <VaDropdownContent class="menu-panel">
+            <div v-if="loggedIn" class="menu-user">
+              <VaIcon name="account_circle" size="1.2rem" />
+              <span>{{ userName }}</span>
+            </div>
+            <VaButton
+              v-if="loggedIn"
+              preset="secondary"
+              color="danger"
+              size="small"
+              :disabled="loggingOut"
+              class="menu-item"
+              @click="logout"
+            >
+              {{ loggingOut ? 'Logging out...' : 'Logout' }}
+            </VaButton>
+            <VaButton
+              preset="secondary"
+              size="small"
+              class="menu-item"
+              :icon="theme === 'dark' ? 'light_mode' : 'dark_mode'"
+              @click="toggleTheme"
+            >
+              {{ theme === 'dark' ? 'Light mode' : 'Dark mode' }}
+            </VaButton>
+          </VaDropdownContent>
+        </VaDropdown>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.corner-canvas {
-  position: fixed;
-  top: 5px; /* centered inside the 50px top band ( (50 - 40) / 2 ) */
-  width: 40px; /* CSS size matches JS `size` */
-  height: 40px;
-  z-index: 10001; /* above the top bar */
-  pointer-events: none; /* do not block clicks */
-  opacity: 0.98;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
-  border-radius: 8px;
-  background: transparent;
-}
-
-.corner-canvas.left { left: 12px; }
-.corner-canvas.right { right: 12px; }
-
-/* full-width top bar that reserves the top 50px */
+/* full-width frosted top bar; height tracks the global --header-h token */
 .top-bar {
   position: fixed;
-  top: 0; /* start at the very top */
+  top: 0;
   left: 0;
   right: 0;
-  height: 50px; /* reserve 50px so other content won't collide */
+  height: var(--header-h);
+  z-index: 10000;
+  user-select: none;
+}
+
+.bar-inner {
+  position: relative;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
-  pointer-events: auto;
-  user-select: none;
-  background: transparent;
+  padding: 0 0.75rem;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-/* keep content below this component from overlapping:
-   consumers can also add `padding-top: 50px` to `main` if desired */
+.corner-canvas {
+  width: 36px;
+  height: 36px;
+  pointer-events: none;
+  opacity: 0.98;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  border-radius: 8px;
+  background: transparent;
+  flex: none;
+}
+
 .title-block {
   text-align: center;
-  line-height: 1;
+  line-height: 1.05;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .header {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.15rem;
   margin: 0;
-  color: #111;
 }
 
 .sub-heading {
-  font-size: 0.75rem;
-  color: #666;
-  margin-top: 2px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+  margin-top: 3px;
 }
 
-#header {
-  position: relative;
-  z-index: 1;
+/* Username, pinned top-left */
+.bar-user {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 30vw;
+  color: var(--c-muted);
+}
+
+.user-icon {
+  flex: none;
+  color: var(--c-accent);
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-actions {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The collapsible menu only appears on narrow screens */
+.bar-menu {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+}
+
+.menu-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 11rem;
+  padding: 0.5rem;
+}
+
+.menu-user {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-ink);
+  border-bottom: 1px solid var(--c-subtle);
+  margin-bottom: 0.15rem;
+}
+
+.menu-item {
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* Mobile: collapse the inline username + actions into the menu */
+@media (max-width: 640px) {
+  .bar-user,
+  .bar-actions {
+    display: none;
+  }
+
+  .bar-menu {
+    display: block;
+  }
 }
 </style>

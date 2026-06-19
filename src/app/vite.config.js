@@ -6,7 +6,6 @@ import axios from 'axios'
 
 const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
 const SECRETS_PATH = '../main/resources/secrets.properties'
-// Trevorism tokens are short-lived (~15 min); refresh well before they expire.
 const TOKEN_REFRESH_MS = 10 * 60 * 1000
 
 // Minimal java.util.Properties-style parser. We parse the file directly instead of

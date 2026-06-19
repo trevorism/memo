@@ -1,12 +1,21 @@
 <script setup>
 import Header from "./components/Header.vue";
+import { useTheme } from "./composables/useTheme";
+
+useTheme().init();
 </script>
 
 <template>
-  <div>
-    <div style="height: 80px"><Header></Header></div>
-    <router-view></router-view>
+  <div class="min-h-screen bg-canvas text-body">
+    <Header />
+    <main class="app-main">
+      <router-view></router-view>
+    </main>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-main {
+  padding-top: var(--header-h);
+}
+</style>

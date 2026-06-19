@@ -1,44 +1,47 @@
 <template>
-  <div class="grid justify-items-center" id="prototype">
-    <div id="login" class="container">
-      <div class="grid justify-items-center">
-        <h2 class="text-xl font-bold py-6 my-6">Login to Memowand</h2>
-        <div class="grid justify-items-right">
-          <va-chip flat class="" :to="{ name: 'ForgotPassword' }">Forgot Password?</va-chip>
+  <div class="auth-wrap" id="prototype">
+    <div class="auth-glow" aria-hidden="true"></div>
+    <div id="login" class="auth-card app-card">
+      <h2 class="text-2xl font-extrabold text-ink text-center">Welcome back</h2>
+      <p class="text-muted text-sm text-center mt-1 mb-6">Sign in to <span class="brand-wordmark">Memowand</span></p>
+
+      <va-form ref="loginForm" tag="form" @submit.prevent="invokeButton">
+        <va-input
+          v-model="username"
+          class="mb-5 w-full"
+          :rules="[(v) => v.length >= 3]"
+          label="Username"
+          minlength="3"
+          type="text"
+          required
+          error-messages="Must be at least 3 characters"
+        />
+        <va-input
+          v-model="password"
+          class="mb-2 w-full"
+          :rules="[(v) => v.length >= 6]"
+          label="Password"
+          minlength="6"
+          type="password"
+          required
+          error-messages="Must be at least 6 characters"
+        />
+
+        <div class="flex justify-end mb-5">
+          <va-chip flat size="small" :to="{ name: 'ForgotPassword' }">Forgot Password?</va-chip>
         </div>
 
-        <va-form ref="loginForm" class="border-2 rounded-md w-80" tag="form" @submit.prevent="invokeButton">
-          <div class="mx-4 mt-4 mb-4">
-            <va-input
-              v-model="username"
-              class="mb-6 w-full"
-              :rules="[(v) => v.length >= 3]"
-              label="Username"
-              minlength="3"
-              type="text"
-              required
-              error-messages="Must be at least 3 characters"
-            />
-            <va-input
-              v-model="password"
-              class="mb-6 w-full"
-              :rules="[(v) => v.length >= 6]"
-              label="Password"
-              minlength="6"
-              type="password"
-              required
-              error-messages="Must be at least 6 characters"
-            />
+        <va-button color="primary" gradient round class="w-full" :disabled="disabled" type="submit">
+          <VaInnerLoading :loading="disabled"> Sign in </VaInnerLoading>
+        </va-button>
+      </va-form>
 
-            <div class="grid justify-items-center">
-              <va-button color="success" :disabled="disabled" type="submit">
-                <VaInnerLoading :loading="disabled"> Submit </VaInnerLoading>
-              </va-button>
-            </div>
-          </div>
-        </va-form>
-        <va-alert v-if="errorMessage.length > 0" class="w-80 text-center" color="danger">{{ errorMessage }}</va-alert>
-      </div>
+      <va-alert v-if="errorMessage.length > 0" class="mt-5 text-center" color="danger">{{ errorMessage }}</va-alert>
+
+      <p class="text-center text-sm text-muted mt-6">
+        New here?
+        <router-link class="text-accent font-semibold" :to="{ name: 'Register' }">Create an account</router-link>
+      </p>
     </div>
   </div>
   <div class="grid justify-items-center hidden">
@@ -176,6 +179,36 @@ export default {
 </script>
 
 <style scoped>
+.auth-wrap {
+  position: relative;
+  min-height: calc(100vh - var(--header-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2rem 1rem;
+}
+
+.auth-glow {
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 60%;
+  background:
+    radial-gradient(40% 60% at 30% 20%, color-mix(in srgb, var(--c-accent) 26%, transparent), transparent 70%),
+    radial-gradient(45% 55% at 75% 25%, color-mix(in srgb, var(--c-accent-2) 24%, transparent), transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 24rem;
+  padding: 2rem;
+}
+
 .gsi-material-button {
   -moz-user-select: none;
   -webkit-user-select: none;
