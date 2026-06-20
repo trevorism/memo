@@ -7,11 +7,9 @@ import com.trevorism.secure.Secure
 import com.trevorism.service.CommentService
 import com.trevorism.service.FolderService
 import io.micronaut.core.annotation.Nullable
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
-import io.micronaut.http.cookie.Cookie
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
@@ -156,13 +154,13 @@ class FolderController {
     @Operation(summary = 'Delete a folder by id (creator or admin only; images are not deleted) **Secure')
     @Delete(value = '/{id}', produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
-    HttpResponse deleteFolder(String id, HttpRequest<?> request, @Nullable Authentication authentication) {
+    HttpResponse deleteFolder(String id, @Nullable Authentication authentication) {
         try {
             Folder folder = folderService.getFolder(id)
             if (!folder) {
                 return HttpResponse.notFound()
             }
-            if (!isCreatorOrAdmin(folder, request, authentication)) {
+            if (!isCreatorOrAdmin(folder, authentication)) {
                 return HttpResponse.status(HttpStatus.FORBIDDEN)
             }
             folderService.deleteFolder(id)
@@ -173,19 +171,20 @@ class FolderController {
         }
     }
 
-    private static boolean isCreatorOrAdmin(Folder folder, HttpRequest<?> request, Authentication authentication) {
-        Collection<String> roles = authentication?.roles ?: []
+    // Authorize solely from the signed JWT. The admin/user_name cookies are not
+    // HttpOnly and are therefore client-writable, so they must never be trusted
+    // for an authorization decision (matches ImageController/CommentController).
+    private static boolean isCreatorOrAdmin(Folder folder, Authentication authentication) {
+        if (!authentication) {
+            return false
+        }
+
+        Collection<String> roles = authentication.roles ?: []
         if (roles.contains(Roles.ADMIN)) {
             return true
         }
 
-        Cookie adminCookie = request?.cookies?.get('admin')
-        if (adminCookie?.value?.equalsIgnoreCase('true')) {
-            return true
-        }
-
-        Cookie userCookie = request?.cookies?.get('user_name')
-        String caller = userCookie?.value ?: authentication?.name
+        String caller = authentication.name
         return caller && folder.username && caller.equalsIgnoreCase(folder.username)
     }
 

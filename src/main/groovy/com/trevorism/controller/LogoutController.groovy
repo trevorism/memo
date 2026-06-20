@@ -18,8 +18,9 @@ class LogoutController {
         def cookie1 = new NettyCookie("session", "").path("/").maxAge(0).secure(true).domain(".memowand.com")
         def cookie2 = new NettyCookie("user_name", "").path("/").maxAge(0).secure(true).domain(".memowand.com")
         def cookie3 = new NettyCookie("admin", "").path("/").maxAge(0).secure(true).domain(".memowand.com")
+        def cookie4 = new NettyCookie("refresh_token", "").path("/").maxAge(0).secure(true).domain(".memowand.com").httpOnly(true)
 
-        return HttpResponse.noContent().cookies([cookie1, cookie2, cookie3] as Set<Cookie>)
+        return HttpResponse.noContent().cookies([cookie1, cookie2, cookie3, cookie4] as Set<Cookie>)
     }
 }
 
