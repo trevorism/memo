@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
@@ -68,6 +68,11 @@ async function removeComment(comment) {
 
 onMounted(async () => {
   await Promise.all([fetchImage(), loadComments()])
+
+  if (route.hash === '#comments') {
+    await nextTick()
+    document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })
+  }
 })
 
 async function fetchImage() {
@@ -273,7 +278,7 @@ async function submitComment() {
           </div>
         </div>
 
-        <section class="px-5 pb-5 border-t border-subtle">
+        <section id="comments" class="px-5 pb-5 border-t border-subtle scroll-mt-4">
           <div class="pt-4">
             <h3 class="text-xl font-semibold text-ink mb-4">Comments</h3>
 

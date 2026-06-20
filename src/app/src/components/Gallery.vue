@@ -86,6 +86,10 @@ function navigateToPhoto(imageId) {
   router.push({ name: 'PhotoDetails', params: { imageId } })
 }
 
+function navigateToComments(imageId) {
+  router.push({ name: 'PhotoDetails', params: { imageId }, hash: '#comments' })
+}
+
 function markImageFailed(imageId) {
   failedImageIds.value = { ...failedImageIds.value, [imageId]: true }
 }
@@ -105,9 +109,7 @@ function markImageFailed(imageId) {
 
     <div v-else-if="error" class="text-center py-16">
       <p class="text-red-500">{{ error }}</p>
-      <VaButton class="mt-4" @click="fetchImages" color="warning" round>
-        Try Again
-      </VaButton>
+      <VaButton class="mt-4" @click="fetchImages" color="warning" round> Try Again </VaButton>
     </div>
 
     <div v-else-if="!hasImages" class="text-center py-16">
@@ -124,76 +126,65 @@ function markImageFailed(imageId) {
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <article
-        v-for="image in images"
-        :key="image.id"
-        class="app-card-interactive group"
-      >
-          <button
-            type="button"
-            class="relative w-full aspect-[4/3] bg-surface-2 overflow-hidden text-left"
-            @click="navigateToPhoto(image.id)"
-            :title="`Open photo from ${image.uploadedBy}`"
+      <article v-for="image in images" :key="image.id" class="app-card-interactive group">
+        <button
+          type="button"
+          class="relative w-full aspect-[4/3] bg-surface-2 overflow-hidden text-left"
+          @click="navigateToPhoto(image.id)"
+          :title="`Open photo from ${image.uploadedBy}`"
+        >
+          <div
+            v-if="failedImageIds[image.id]"
+            class="w-full h-full flex items-center justify-center text-xs text-muted px-2 text-center"
           >
-            <div
-              v-if="failedImageIds[image.id]"
-              class="w-full h-full flex items-center justify-center text-xs text-muted px-2 text-center"
-            >
-              Image unavailable (open details)
+            Image unavailable (open details)
+          </div>
+          <img
+            v-else
+            :src="image.thumbnailUrl || image.url"
+            :alt="'Photo from ' + image.uploadedBy"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            @error="markImageFailed(image.id)"
+          />
+        </button>
+        <div class="p-4">
+          <p v-if="image.caption" class="text-sm text-body mb-2 line-clamp-2" :title="image.caption">
+            {{ image.caption }}
+          </p>
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <p class="font-semibold text-sm text-ink truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
+              <span v-if="image.uploadedDate" class="text-xs text-muted">
+                {{ new Date(image.uploadedDate).toLocaleDateString() }}
+              </span>
             </div>
-            <img
-              v-else
-              :src="image.thumbnailUrl || image.url"
-              :alt="'Photo from ' + image.uploadedBy"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              @error="markImageFailed(image.id)"
-            />
-          </button>
-          <div class="p-4">
-            <p
-              v-if="image.caption"
-              class="text-sm text-body mb-2 line-clamp-2"
-              :title="image.caption"
-            >
-              {{ image.caption }}
-            </p>
-            <div class="flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <p class="font-semibold text-sm text-ink truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
-                <span v-if="image.uploadedDate" class="text-xs text-muted">
-                  {{ new Date(image.uploadedDate).toLocaleDateString() }}
-                </span>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <VaBadge
-                  :text="`${image.commentCount} ${image.commentCount === 1 ? 'comment' : 'comments'}`"
-                  color="info"
-                />
-                <VaButton
-                  v-if="canDelete(image)"
-                  preset="secondary"
-                  color="danger"
-                  size="small"
-                  :loading="!!deletingImageIds[image.id]"
-                  @click="requestDelete(image)"
-                >
-                  Delete
-                </VaButton>
-              </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <VaBadge
+                :text="`${image.commentCount} ${image.commentCount === 1 ? 'comment' : 'comments'}`"
+                @click="navigateToComments(image.id)"
+                color="info"
+              />
+              <VaButton
+                v-if="canDelete(image)"
+                preset="secondary"
+                color="danger"
+                size="small"
+                :loading="!!deletingImageIds[image.id]"
+                @click="requestDelete(image)"
+              >
+                Delete
+              </VaButton>
             </div>
           </div>
+        </div>
       </article>
     </div>
 
-    <VaModal
-      v-model="showDeleteModal"
-      title="Delete photo?"
-      ok-text="Delete"
-      cancel-text="Cancel"
-      @ok="performDelete"
-    >
+    <VaModal v-model="showDeleteModal" title="Delete photo?" ok-text="Delete" cancel-text="Cancel" @ok="performDelete">
       <p class="text-gray-700">
-        This will permanently delete this photo<span v-if="deleteTarget"> uploaded by {{ deleteTarget.uploadedBy }}</span>
+        This will permanently delete this photo<span v-if="deleteTarget">
+          uploaded by {{ deleteTarget.uploadedBy }}</span
+        >
         and its comments. This action cannot be undone.
       </p>
     </VaModal>
@@ -221,4 +212,3 @@ function markImageFailed(imageId) {
   font-size: 34px;
 }
 </style>
-
