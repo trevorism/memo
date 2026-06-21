@@ -17,10 +17,10 @@ const app = createApp(App)
 app.use(VueMixpanel, {
     token: "f364be892a57c11f8f6171626c7b8f37",
     config: {
+        api_host: `${window.location.origin}/mp`,
         debug: import.meta.env.DEV,
         track_pageview: false,
-        secure_cookie: true,
-        same_site: 'None'
+        persistence: 'localStorage'
     },
 })
 app.use(router)
