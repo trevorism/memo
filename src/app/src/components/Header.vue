@@ -1,7 +1,6 @@
 <script setup lang="js">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
-import mixpanel from 'mixpanel-browser'
 import { VaButton, VaDropdown, VaDropdownContent, VaIcon } from 'vuestic-ui'
 import { useTheme } from '../composables/useTheme'
 import { isLoggedIn, getCurrentUserName } from '../utils/auth'
@@ -19,11 +18,6 @@ async function logout() {
   try {
     await axios.post('/api/logout/')
   } finally {
-    try {
-      mixpanel.reset()
-    } catch {
-      // Analytics is best-effort; never block logout on it.
-    }
     window.location.assign('/')
   }
 }

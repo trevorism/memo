@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
-import mixpanel from 'mixpanel-browser'
 import { getCurrentUserName } from '../utils/auth'
 import { uploadImage as saveImage } from '../utils/galleryApi'
 import { uploadAlbumZip } from '../utils/folderApi'
@@ -99,17 +98,6 @@ async function uploadImage() {
 
       if (response?.id) {
         success.value = true
-        try {
-          mixpanel.track('photo_uploaded', {
-            photo_id: response.id,
-            has_caption: caption.value.trim().length > 0,
-            caption_length: caption.value.trim().length,
-            file_size_mb: Number((selectedFile.value.size / 1024 / 1024).toFixed(2)),
-            file_type: selectedFile.value.type || 'unknown'
-          })
-        } catch {
-          // Analytics is best-effort; never block the upload flow on it.
-        }
         // Redirect back to welcome page after 2 seconds
         setTimeout(() => {
           router.push({ name: 'Home' })

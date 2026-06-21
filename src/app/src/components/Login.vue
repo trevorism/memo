@@ -90,7 +90,6 @@ import { isLoggedIn } from '../utils/auth'
 const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
 
 export default {
-  inject: ['mixpanel'],
   name: 'Login',
   components: { VaButton },
   data() {
@@ -154,11 +153,6 @@ export default {
       this.errorMessage = ''
       axios.post('/api/login/' + TENANT_GUID, request)
         .then(() => {
-          try {
-            self.mixpanel.identify(self.username)
-          } catch {
-            // Analytics is best-effort; never block the login flow on it.
-          }
           // Hard navigation so the app re-reads the freshly set auth cookies.
           const returnUrl = self.$route.query.return_url
           window.location.assign(returnUrl || '/')

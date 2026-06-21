@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../components/Login.vue'
 import ForgotPassword from '../components/ForgotPassword.vue'
-import mixpanel from 'mixpanel-browser';
 import Home from "../components/Home.vue";
 import Register from "../components/Register.vue";
 import Upload from "../components/Upload.vue";
@@ -54,14 +53,6 @@ const router = createRouter({
       props: true
     }
   ]
-})
-
-router.afterEach((to) => {
-  try {
-    mixpanel.track_pageview({ page: to.fullPath, name: to.name })
-  } catch {
-    // Analytics is best-effort and may not be initialized on the very first navigation
-  }
 })
 
 export default router
