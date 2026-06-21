@@ -7,29 +7,26 @@ import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.ResponseFilter
 import io.micronaut.http.annotation.ServerFilter
 
-/**
- * Controls browser caching of the bundled SPA so new deployments render without a manual refresh.
- *
- * index.html is revalidated on every request so it always points at the current build's hashed
- * assets, while the content-hashed /assets/* files are cached indefinitely (their names change
- * each build, so a stale copy can never be referenced).
- */
 @ServerFilter("/**")
 class CacheControlFilter {
 
     private static final String IMMUTABLE = "public, max-age=31536000, immutable"
     private static final String NO_CACHE = "no-cache, must-revalidate"
+    private static final String NO_STORE = "no-store"
 
     @ResponseFilter
     void applyCacheControl(HttpRequest<?> request, MutableHttpResponse<?> response) {
         String path = request.path
         if (path.startsWith("/assets/")) {
-            setCacheControl(response, IMMUTABLE)
+            setCacheControl(response, isSuccess(response) ? IMMUTABLE : NO_STORE)
         } else if (acceptsHtml(request)) {
-            // Decide off the request: the response content type is not yet populated when this
-            // filter runs for static/streamed file responses, so isHtml(response) would miss.
             setCacheControl(response, NO_CACHE)
         }
+    }
+
+    private static boolean isSuccess(MutableHttpResponse<?> response) {
+        int code = response.status.code
+        code >= 200 && code < 300
     }
 
     private static boolean acceptsHtml(HttpRequest<?> request) {
