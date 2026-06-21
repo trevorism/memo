@@ -14,8 +14,6 @@ installAuthRefresh()
 startProactiveRefresh()
 
 const app = createApp(App)
-app.use(router)
-app.use(createVuestic({ config }))
 app.use(VueMixpanel, {
     token: "f364be892a57c11f8f6171626c7b8f37",
     config: {
@@ -25,6 +23,8 @@ app.use(VueMixpanel, {
         same_site: 'None'
     },
 })
+app.use(router)
+app.use(createVuestic({ config }))
 
 if (isLoggedIn()) {
     try {
