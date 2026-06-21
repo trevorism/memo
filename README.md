@@ -4,5 +4,7 @@
 ![GitHub language count](https://img.shields.io/github/languages/count/trevorism/memo)
 ![GitHub top language](https://img.shields.io/github/languages/top/trevorism/memo)
 
+Code for [Memowand](http://memowand.com)
+
 # How to build
 `gradle clean build`

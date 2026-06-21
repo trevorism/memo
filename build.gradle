@@ -93,7 +93,7 @@ appengine {
         projectId = "trevorism-memo"
         stopPreviousVersion = true
         promote = true
-        version = "0-3-0"
+        version = "0-4-0"
     }
 }
 
@@ -109,7 +109,7 @@ jacocoTestCoverageVerification {
     violationRules {
         rule {
             limit {
-                minimum = 0.0
+                minimum = 0.5
             }
         }
     }

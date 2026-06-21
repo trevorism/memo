@@ -20,7 +20,7 @@ jobs:
       JDK_VERSION: 25
       gcp_project: 'trevorism-memo'
       gcp_project_id: '139575947486'
-      version: '0-3-0'
+      version: '0-4-0'
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
