@@ -57,7 +57,9 @@ const router = createRouter({
 })
 
 router.afterEach((to) => {
-  mixpanel.track(to.fullPath)
+  // Fixed event name ($mp_web_page_view) with the path as a property — never use
+  // the path itself as the event name, which would explode the event schema.
+  mixpanel.track_pageview({ page: to.fullPath, name: to.name })
 })
 
 export default router

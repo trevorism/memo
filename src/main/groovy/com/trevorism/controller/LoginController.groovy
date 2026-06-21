@@ -57,8 +57,6 @@ class LoginController {
 
         String refreshToken = userSessionService.getRefreshToken(loginRequest, guid)
 
-        // The access token (session) lives 15 minutes; the refresh token and the
-        // UI-facing cookies live a day so the session can be silently renewed.
         int accessMaxAge = 15 * 60
         int refreshMaxAge = 24 * 60 * 60
 

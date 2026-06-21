@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",
+    "mixpanel-browser": "^2.80.0",
     "vue": "^3.5.38",
     "vue-mixpanel": "^2.0.0",
     "vue-router": "^5.1.0",

@@ -1,14 +1,13 @@
 <script setup lang="js">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+import mixpanel from 'mixpanel-browser'
 import { VaButton, VaDropdown, VaDropdownContent, VaIcon } from 'vuestic-ui'
 import { useTheme } from '../composables/useTheme'
 import { isLoggedIn, getCurrentUserName } from '../utils/auth'
 
 const { theme, toggleTheme } = useTheme()
 
-// Evaluated once at mount — login/logout both hard-navigate, so the header
-// always remounts with fresh cookie state.
 const loggedIn = isLoggedIn()
 const userName = getCurrentUserName()?.trim() || ''
 const loggingOut = ref(false)
@@ -20,7 +19,11 @@ async function logout() {
   try {
     await axios.post('/api/logout/')
   } finally {
-    // Hard navigation so the app re-reads cookies and renders the SplashPage.
+    try {
+      mixpanel.reset()
+    } catch {
+      // Analytics is best-effort; never block logout on it.
+    }
     window.location.assign('/')
   }
 }

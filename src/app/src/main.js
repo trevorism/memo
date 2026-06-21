@@ -5,11 +5,11 @@ import router from './router'
 import { createVuestic } from 'vuestic-ui'
 import config from '../vuestic.config.js'
 import VueMixpanel from 'vue-mixpanel'
+import mixpanel from 'mixpanel-browser'
 import './style.css'
 import { installAuthRefresh, startProactiveRefresh } from './utils/authRefresh'
+import { isLoggedIn, getCurrentUserName } from './utils/auth'
 
-// Silently renew the session token (15-min lifetime) so users aren't logged out
-// mid-use: a 401 interceptor refreshes-and-retries, plus a proactive timer.
 installAuthRefresh()
 startProactiveRefresh()
 
@@ -17,11 +17,21 @@ const app = createApp(App)
 app.use(router)
 app.use(createVuestic({ config }))
 app.use(VueMixpanel, {
-    token: "3ad96fc246692627d5addd73aa6072ae",
+    token: "f364be892a57c11f8f6171626c7b8f37",
     config: {
-        track_pageview: true,
+        debug: import.meta.env.DEV,
+        track_pageview: false,
         secure_cookie: true,
         same_site: 'None'
     },
 })
+
+if (isLoggedIn()) {
+    try {
+        mixpanel.identify(getCurrentUserName())
+    } catch {
+        // Analytics is best-effort; never block startup on it.
+    }
+}
+
 app.mount('#app')

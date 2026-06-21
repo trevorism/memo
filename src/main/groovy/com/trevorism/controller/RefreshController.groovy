@@ -24,7 +24,7 @@ class RefreshController {
     @Inject
     private UserSessionService userSessionService
 
-    @Tag(name = "Login Operations")
+    @Tag(name = "Refresh Operations")
     @Operation(summary = "Exchange the refresh token cookie for a fresh session token")
     @Post(value = "/", produces = MediaType.APPLICATION_JSON)
     HttpResponse refresh(@CookieValue("refresh_token") @Nullable String refreshToken) {
@@ -34,13 +34,9 @@ class RefreshController {
 
         String token = userSessionService.redeemRefreshToken(refreshToken)
         if (!token) {
-            // Refresh token is expired/invalid — force a fresh login by clearing cookies.
             return HttpResponse.unauthorized().cookies(clearedCookies())
         }
 
-        // Derive the UI-facing cookie values from the freshly redeemed token, never
-        // from the incoming request cookies — admin/user_name are not HttpOnly and
-        // are therefore client-writable, so echoing them would launder a forged value.
         User user = userSessionService.getUserFromToken(token)
         if (User.isNullUser(user)) {
             return HttpResponse.unauthorized().cookies(clearedCookies())
@@ -50,7 +46,6 @@ class RefreshController {
         int refreshMaxAge = 24 * 60 * 60
 
         def sessionCookie = new NettyCookie("session", token).path("/").maxAge(accessMaxAge).secure(true).domain(".memowand.com").httpOnly(true)
-        // Slide the UI-facing cookies forward so they don't expire mid-session.
         def userCookie = new NettyCookie("user_name", user.username).path("/").maxAge(refreshMaxAge).secure(true).domain(".memowand.com")
         def adminCookie = new NettyCookie("admin", user.admin.toString()).path("/").maxAge(refreshMaxAge).secure(true).domain(".memowand.com")
 

@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
+import mixpanel from 'mixpanel-browser'
 import { getCurrentUserName } from '../utils/auth'
 import { getImage, listComments, addComment, deleteComment, updateCaption, deleteImage } from '../utils/galleryApi'
 import FolderPickerModal from './FolderPickerModal.vue'
@@ -82,6 +83,14 @@ async function fetchImage() {
 
   try {
     image.value = await getImage(route.params.imageId)
+    try {
+      mixpanel.track('photo_viewed', {
+        photo_id: route.params.imageId,
+        is_owner: isOwner.value
+      })
+    } catch {
+      // Analytics is best-effort; never block rendering on it.
+    }
   } catch (err) {
     const notFound = err?.response?.status === 404 || err?.message === 'not_found'
     error.value = notFound ? 'Photo not found.' : 'Unable to load photo.'
