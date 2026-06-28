@@ -83,11 +83,9 @@
 </template>
 
 <script>
-import axios from 'axios'
 import {VaButton} from "vuestic-ui";
 import { isLoggedIn } from '../utils/auth'
-
-const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
+import { warmup, login, getOAuthRedirectUrl } from '../utils/authApi'
 
 export default {
   name: 'Login',
@@ -107,7 +105,7 @@ export default {
     }
 
     try {
-      await axios.get('/api/authWarmup')
+      await warmup()
     } finally {
       if (isLoggedIn()) {
         this.$router.replace({ name: 'Home' })
@@ -116,28 +114,18 @@ export default {
   },
   methods: {
     loginGoogle: function() {
-      let returnUrl = this.$route.query.return_url
-      let url = '/api/google/' + TENANT_GUID
-      if(returnUrl) {
-        url += '?return_url=' + encodeURIComponent(returnUrl)
-      }
-      axios.get(url)
-          .then(response => {
-            window.location.href = response.data
+      getOAuthRedirectUrl('google', this.$route.query.return_url)
+          .then(redirectUrl => {
+            window.location.href = redirectUrl
           })
           .catch(() => {
             this.errorMessage = 'Unable to login with Google'
           })
     },
     loginMicrosoft: function() {
-      let returnUrl = this.$route.query.return_url
-      let url = '/api/microsoft/' + TENANT_GUID
-      if(returnUrl) {
-        url += '?return_url=' + encodeURIComponent(returnUrl)
-      }
-      axios.get(url)
-        .then(response => {
-          window.location.href = response.data
+      getOAuthRedirectUrl('microsoft', this.$route.query.return_url)
+        .then(redirectUrl => {
+          window.location.href = redirectUrl
         })
         .catch(() => {
           this.errorMessage = 'Unable to login with Microsoft'
@@ -145,13 +133,9 @@ export default {
     },
     invokeButton: function () {
       let self = this
-      let request = {
-        username: this.username,
-        password: this.password
-      }
       this.disabled = true
       this.errorMessage = ''
-      axios.post('/api/login/' + TENANT_GUID, request)
+      login(this.username, this.password)
         .then(() => {
           // Hard navigation so the app re-reads the freshly set auth cookies.
           const returnUrl = self.$route.query.return_url

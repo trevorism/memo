@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import { listImages, deleteImage } from '../utils/galleryApi'
+import { formatDate } from '../utils/format'
 
 // `visibility` is driven by the unified toolbar in Welcome.vue.
 const props = defineProps({
@@ -155,7 +156,7 @@ function markImageFailed(imageId) {
             <div class="min-w-0">
               <p class="font-semibold text-sm text-ink truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
               <span v-if="image.uploadedDate" class="text-xs text-muted">
-                {{ new Date(image.uploadedDate).toLocaleDateString() }}
+                {{ formatDate(image.uploadedDate) }}
               </span>
             </div>
             <div class="flex items-center gap-2 shrink-0">

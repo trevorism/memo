@@ -5,6 +5,7 @@ import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { canManageFolder } from '../utils/auth'
 import { listImages } from '../utils/galleryApi'
 import { getFolder, listFolderImages, removeImageFromFolder, addImageToFolder, deleteFolder } from '../utils/folderApi'
+import { formatDate } from '../utils/format'
 
 const props = defineProps({
   folderId: { type: String, required: true }
@@ -246,7 +247,7 @@ async function performDeleteFolder() {
             <div class="min-w-0">
               <p class="font-semibold text-sm text-ink truncate" :title="image.uploadedBy">{{ image.uploadedBy }}</p>
               <span v-if="image.uploadedDate" class="text-xs text-muted">
-                {{ new Date(image.uploadedDate).toLocaleDateString() }}
+                {{ formatDate(image.uploadedDate) }}
               </span>
             </div>
             <div class="flex items-center gap-2 shrink-0">

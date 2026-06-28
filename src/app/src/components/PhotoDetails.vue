@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
 import { getImage, listComments, addComment, updateComment, deleteComment, updateCaption, deleteImage } from '../utils/galleryApi'
+import { formatDateTime, toTimestamp } from '../utils/format'
 import FolderPickerModal from './FolderPickerModal.vue'
 
 const route = useRoute()
@@ -38,11 +39,7 @@ const canDelete = isOwner
 const canEditCaption = isOwner
 
 const sortedComments = computed(() => {
-  return [...comments.value].sort((a, b) => {
-    const aTime = a?.createdDate ? new Date(a.createdDate).getTime() : 0
-    const bTime = b?.createdDate ? new Date(b.createdDate).getTime() : 0
-    return bTime - aTime
-  })
+  return [...comments.value].sort((a, b) => toTimestamp(b?.createdDate) - toTimestamp(a?.createdDate))
 })
 
 const commentCount = computed(() => comments.value.length)
@@ -286,7 +283,7 @@ async function submitComment() {
             <div class="flex items-center gap-3">
               <VaBadge :text="`${commentCount} comments`" color="info" />
               <span v-if="image.uploadedDate" class="text-sm text-muted">
-                {{ new Date(image.uploadedDate).toLocaleString() }}
+                {{ formatDateTime(image.uploadedDate) }}
               </span>
               <VaButton
                 preset="secondary"
@@ -340,27 +337,27 @@ async function submitComment() {
                   <p class="font-semibold text-sm text-ink">{{ comment.author || 'Unknown' }}</p>
                   <div class="flex items-center gap-2">
                     <p v-if="comment.createdDate" class="text-xs text-muted">
-                      {{ new Date(comment.createdDate).toLocaleString() }}
+                      {{ formatDateTime(comment.createdDate) }}
                     </p>
                     <VaButton
                       v-if="canEditComment(comment) && editingCommentId !== comment.id"
                       preset="plain"
                       color="primary"
                       size="small"
-                      icon="edit"
-                      aria-label="Edit comment"
                       @click="startEditComment(comment)"
-                    />
+                    >
+                      Edit
+                    </VaButton>
                     <VaButton
                       v-if="canDeleteComment(comment) && editingCommentId !== comment.id"
                       preset="plain"
                       color="danger"
                       size="small"
-                      icon="delete"
-                      aria-label="Delete comment"
                       :loading="deletingCommentId === comment.id"
                       @click="removeComment(comment)"
-                    />
+                    >
+                      Delete
+                    </VaButton>
                   </div>
                 </div>
                 <div v-if="editingCommentId === comment.id">

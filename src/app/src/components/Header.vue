@@ -1,9 +1,9 @@
 <script setup lang="js">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from 'axios'
 import { VaButton, VaDropdown, VaDropdownContent, VaIcon } from 'vuestic-ui'
 import { useTheme } from '../composables/useTheme'
 import { isLoggedIn, getCurrentUserName } from '../utils/auth'
+import { logout as logoutRequest } from '../utils/authApi'
 
 const { theme, toggleTheme } = useTheme()
 
@@ -16,7 +16,7 @@ async function logout() {
 
   loggingOut.value = true
   try {
-    await axios.post('/api/logout/')
+    await logoutRequest()
   } finally {
     window.location.assign('/')
   }

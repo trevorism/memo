@@ -69,7 +69,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { register } from '../utils/authApi'
+import { isValidUsername, isValidEmail, isValidPassword } from '../utils/validation'
 
 export default {
   name: 'register',
@@ -86,27 +87,22 @@ export default {
   },
   methods: {
     invokeButton: function () {
-      let request = {
-        username: this.username,
-        email: this.email,
-        password: this.newPassword
-      }
       this.disabled = true
       this.errorMessage = ''
 
-      if (this.username.length < 3) {
+      if (!isValidUsername(this.username)) {
         this.errorMessage = 'Username must be at least 3 characters'
         this.disabled = false
         return
       }
 
-      if (this.email.length < 5 || !this.email.includes('@')) {
+      if (!isValidEmail(this.email)) {
         this.errorMessage = 'Email must be a valid email address'
         this.disabled = false
         return
       }
 
-      if (this.newPassword.length < 6) {
+      if (!isValidPassword(this.newPassword)) {
         this.errorMessage = 'Password must be at least 6 characters'
         this.disabled = false
         return
@@ -118,8 +114,7 @@ export default {
         return
       }
 
-      axios
-        .post('/api/user', request)
+      register({ username: this.username, email: this.email, password: this.newPassword })
         .then(() => {
           this.disabled = false
           this.clearFields()

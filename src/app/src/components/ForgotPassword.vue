@@ -34,9 +34,8 @@
 </template>
 
 <script>
-import axios from 'axios'
-
-const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
+import { forgotPassword } from '../utils/authApi'
+import { isValidEmail } from '../utils/validation'
 
 export default {
   name: 'ForgotPassword',
@@ -50,14 +49,16 @@ export default {
   },
   methods: {
     invokeButton: function () {
-      let request = {
-        email: this.email,
-        tenantId: TENANT_GUID
-      }
       this.disabled = true
       this.errorMessage = ''
-      axios
-        .post('/api/login/forgot', request)
+
+      if (!isValidEmail(this.email)) {
+        this.errorMessage = 'Email must be a valid email address'
+        this.disabled = false
+        return
+      }
+
+      forgotPassword(this.email)
         .then(() => {
           this.disabled = false
           this.errorMessage = ''
