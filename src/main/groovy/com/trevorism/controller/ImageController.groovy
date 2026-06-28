@@ -176,6 +176,9 @@ class ImageController {
         }
     }
 
+    // Authorize solely from the signed JWT. The admin/user_name cookies are not
+    // HttpOnly and are therefore client-writable, so they must never be trusted
+    // for an authorization decision (matches FolderController/CommentController).
     private static boolean isOwnerOrAdmin(Image image, Authentication authentication) {
         if (!authentication) {
             return false
@@ -186,16 +189,19 @@ class ImageController {
             return true
         }
 
-        return true
+        String caller = authentication.name
+        return caller && image.username && caller.equalsIgnoreCase(image.username)
     }
 
     @Tag(name = "Image Operations")
     @Operation(summary = "Upload a new image **Secure")
     @Post(value = "/", produces = MediaType.APPLICATION_JSON, consumes = MediaType.MULTIPART_FORM_DATA)
     @Secure(value = Roles.USER)
-    HttpResponse<Image> uploadImage(@Part CompletedFileUpload file, @Part String uploadedBy, @Part @Nullable String caption) {
+    HttpResponse<Image> uploadImage(@Part CompletedFileUpload file, @Part @Nullable String caption, @Nullable Authentication authentication) {
         try {
-            Image image = imageService.createImage(file, uploadedBy, caption)
+            // Uploader is the authenticated identity (JWT), never a client-supplied value.
+            String username = authentication?.name ?: 'Unknown'
+            Image image = imageService.createImage(file, username, caption)
             return HttpResponse.created(image)
         } catch (Exception e) {
             log.error("Error uploading image", e)

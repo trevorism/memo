@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VaButton, VaBadge, VaModal } from 'vuestic-ui'
 import { getCurrentUserName } from '../utils/auth'
-import { getImage, listComments, addComment, deleteComment, updateCaption, deleteImage } from '../utils/galleryApi'
+import { getImage, listComments, addComment, updateComment, deleteComment, updateCaption, deleteImage } from '../utils/galleryApi'
 import FolderPickerModal from './FolderPickerModal.vue'
 
 const route = useRoute()
@@ -17,6 +17,9 @@ const error = ref(null)
 const commentsError = ref(null)
 const submittingComment = ref(false)
 const deletingCommentId = ref(null)
+const editingCommentId = ref(null)
+const editCommentDraft = ref('')
+const savingCommentId = ref(null)
 const newComment = ref('')
 const imageLoadFailed = ref(false)
 const deleting = ref(false)
@@ -47,6 +50,38 @@ const commentCount = computed(() => comments.value.length)
 function canDeleteComment(comment) {
   const me = (getCurrentUserName() || '').trim().toLowerCase()
   return !!me && (comment?.author || '').toLowerCase() === me
+}
+
+const canEditComment = canDeleteComment
+
+function startEditComment(comment) {
+  editingCommentId.value = comment.id
+  editCommentDraft.value = comment.text || ''
+}
+
+function cancelEditComment() {
+  editingCommentId.value = null
+  editCommentDraft.value = ''
+}
+
+async function saveComment(comment) {
+  const text = editCommentDraft.value.trim()
+  if (!comment?.id || !text || savingCommentId.value) return
+
+  savingCommentId.value = comment.id
+  commentsError.value = null
+
+  try {
+    const updated = await updateComment(route.params.imageId, comment.id, text)
+    comments.value = comments.value.map((c) => (c.id === comment.id ? updated : c))
+    editingCommentId.value = null
+    editCommentDraft.value = ''
+  } catch (err) {
+    commentsError.value = 'Unable to update comment.'
+    console.error('Error updating comment:', err)
+  } finally {
+    savingCommentId.value = null
+  }
 }
 
 async function removeComment(comment) {
@@ -165,7 +200,6 @@ async function submitComment() {
 
   try {
     const created = await addComment(route.params.imageId, {
-      author: getCurrentUserName() || 'Anonymous',
       text: newComment.value.trim()
     })
 
@@ -303,24 +337,49 @@ async function submitComment() {
             <div v-else class="space-y-3">
               <article v-for="comment in sortedComments" :key="comment.id" class="p-3 border border-subtle rounded-xl bg-surface-2">
                 <div class="flex items-center justify-between gap-3 mb-1">
-                  <p class="font-semibold text-sm text-ink">{{ comment.author || 'Anonymous' }}</p>
+                  <p class="font-semibold text-sm text-ink">{{ comment.author || 'Unknown' }}</p>
                   <div class="flex items-center gap-2">
                     <p v-if="comment.createdDate" class="text-xs text-muted">
                       {{ new Date(comment.createdDate).toLocaleString() }}
                     </p>
                     <VaButton
-                      v-if="canDeleteComment(comment)"
+                      v-if="canEditComment(comment) && editingCommentId !== comment.id"
+                      preset="plain"
+                      color="primary"
+                      size="small"
+                      icon="edit"
+                      aria-label="Edit comment"
+                      @click="startEditComment(comment)"
+                    />
+                    <VaButton
+                      v-if="canDeleteComment(comment) && editingCommentId !== comment.id"
                       preset="plain"
                       color="danger"
                       size="small"
+                      icon="delete"
+                      aria-label="Delete comment"
                       :loading="deletingCommentId === comment.id"
                       @click="removeComment(comment)"
-                    >
-                      Delete
+                    />
+                  </div>
+                </div>
+                <div v-if="editingCommentId === comment.id">
+                  <textarea
+                    v-model="editCommentDraft"
+                    rows="3"
+                    class="app-input"
+                    placeholder="Edit your comment..."
+                  ></textarea>
+                  <div class="mt-2 flex justify-end gap-2">
+                    <VaButton preset="secondary" color="secondary" round :disabled="savingCommentId === comment.id" @click="cancelEditComment">
+                      Cancel
+                    </VaButton>
+                    <VaButton color="primary" gradient round :disabled="!editCommentDraft.trim()" :loading="savingCommentId === comment.id" @click="saveComment(comment)">
+                      Save
                     </VaButton>
                   </div>
                 </div>
-                <p class="text-sm text-body whitespace-pre-wrap">{{ comment.text }}</p>
+                <p v-else class="text-sm text-body whitespace-pre-wrap">{{ comment.text }}</p>
               </article>
             </div>
           </div>

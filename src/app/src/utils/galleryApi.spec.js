@@ -61,7 +61,7 @@ describe('galleryApi', () => {
 
     const comments = await listComments('abc')
 
-    expect(axios.get).toHaveBeenCalledWith('/api/comment/abc/comments')
+    expect(axios.get).toHaveBeenCalledWith('/api/comment/abc/comment')
     expect(comments[0]).toEqual({
       id: 'c1',
       imageId: 'abc',
@@ -72,39 +72,39 @@ describe('galleryApi', () => {
   })
 
   it('rejects empty comments before calling the backend', async () => {
-    await expect(addComment('abc', { author: 'trevor', text: '   ' })).rejects.toThrow('invalid_comment')
+    await expect(addComment('abc', { text: '   ' })).rejects.toThrow('invalid_comment')
     expect(axios.post).not.toHaveBeenCalled()
   })
 
-  it('posts a comment with the image id and trimmed values', async () => {
+  it('posts a comment with the image id and trimmed text (author is server-stamped)', async () => {
     axios.post.mockResolvedValueOnce({
       data: { id: 'c2', imageId: 'abc', author: 'trevor', text: 'Hello', createdDate: '2026-01-03T00:00:00Z' }
     })
 
-    const created = await addComment('abc', { author: 'trevor', text: '  Hello  ' })
+    const created = await addComment('abc', { text: '  Hello  ' })
 
-    expect(axios.post).toHaveBeenCalledWith('/api/comment/abc/comments', {
+    expect(axios.post).toHaveBeenCalledWith('/api/comment/abc/comment', {
       imageId: 'abc',
-      author: 'trevor',
       text: 'Hello'
     })
     expect(created.text).toBe('Hello')
   })
 
-  it('uploads an image as multipart form data', async () => {
+  it('uploads an image as multipart form data (uploader is server-stamped)', async () => {
     axios.post.mockResolvedValueOnce({
       data: { id: 'new', username: 'trevor', bucketPath: 'b.jpg', createdDate: '2026-01-04T00:00:00Z' }
     })
 
     const file = new File(['data'], 'b.jpg', { type: 'image/jpeg' })
-    const created = await uploadImage(file, 'trevor')
+    const created = await uploadImage(file, 'a caption')
 
     expect(axios.post).toHaveBeenCalledTimes(1)
     const [url, body] = axios.post.mock.calls[0]
     expect(url).toBe('/api/image/')
     expect(body).toBeInstanceOf(FormData)
     expect(body.get('file')).toBe(file)
-    expect(body.get('uploadedBy')).toBe('trevor')
+    expect(body.get('caption')).toBe('a caption')
+    expect(body.get('uploadedBy')).toBeNull()
     expect(created.id).toBe('new')
   })
 

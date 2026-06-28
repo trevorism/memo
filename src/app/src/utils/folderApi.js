@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { mapImage, rawImageUrl } from './galleryApi'
-import { getCurrentUserName } from './auth'
 
 const FOLDER_BASE = '/api/folder'
 
@@ -37,7 +36,7 @@ async function getFolder(folderId) {
 }
 
 async function listFolderImages(folderId) {
-  const response = await axios.get(`${FOLDER_BASE}/${encodeURIComponent(folderId)}/images`)
+  const response = await axios.get(`${FOLDER_BASE}/${encodeURIComponent(folderId)}/image`)
   const images = Array.isArray(response.data) ? response.data : []
   return images.map(mapImage).filter(Boolean)
 }
@@ -53,8 +52,7 @@ async function createFolder(name) {
   if (!trimmed) {
     throw new Error('name_required')
   }
-  const username = (getCurrentUserName() || '').trim() || 'Unknown'
-  const response = await axios.post(`${FOLDER_BASE}/`, { name: trimmed, username })
+  const response = await axios.post(`${FOLDER_BASE}/`, { name: trimmed })
   const folder = mapFolder(response.data)
   if (!folder) {
     throw new Error('create_failed')
@@ -62,14 +60,13 @@ async function createFolder(name) {
   return folder
 }
 
-async function uploadAlbumZip(file, uploadedBy) {
+async function uploadAlbumZip(file) {
   if (!file) {
     throw new Error('file_required')
   }
 
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('uploadedBy', (uploadedBy || '').trim() || 'Unknown')
 
   const response = await axios.post(`${FOLDER_BASE}/zip`, formData)
   const folder = mapFolder(response.data)
@@ -95,14 +92,14 @@ async function deleteFolder(folderId) {
 
 async function addImageToFolder(folderId, imageId) {
   const response = await axios.post(
-    `${FOLDER_BASE}/${encodeURIComponent(folderId)}/images/${encodeURIComponent(imageId)}`
+    `${FOLDER_BASE}/${encodeURIComponent(folderId)}/image/${encodeURIComponent(imageId)}`
   )
   return mapFolder(response.data)
 }
 
 async function removeImageFromFolder(folderId, imageId) {
   const response = await axios.delete(
-    `${FOLDER_BASE}/${encodeURIComponent(folderId)}/images/${encodeURIComponent(imageId)}`
+    `${FOLDER_BASE}/${encodeURIComponent(folderId)}/image/${encodeURIComponent(imageId)}`
   )
   return mapFolder(response.data)
 }

@@ -32,7 +32,7 @@ function mapComment(raw) {
   return {
     id: raw.id,
     imageId: raw.imageId,
-    author: raw.author || 'Anonymous',
+    author: raw.author || 'Unknown',
     text: raw.text || '',
     createdDate: raw.createdDate || null
   }
@@ -66,7 +66,7 @@ async function getImage(imageId) {
 }
 
 async function listComments(imageId) {
-  const response = await axios.get(`${COMMENT_BASE}/${encodeURIComponent(imageId)}/comments`)
+  const response = await axios.get(`${COMMENT_BASE}/${encodeURIComponent(imageId)}/comment`)
   const comments = Array.isArray(response.data) ? response.data : []
   return comments.map(mapComment)
 }
@@ -77,36 +77,43 @@ async function addComment(imageId, commentPayload) {
     throw new Error('invalid_comment')
   }
 
-  const body = {
-    imageId,
-    author: (commentPayload?.author || '').trim() || 'Anonymous',
-    text
-  }
-
   const response = await axios.post(
-    `${COMMENT_BASE}/${encodeURIComponent(imageId)}/comments`,
-    body
+    `${COMMENT_BASE}/${encodeURIComponent(imageId)}/comment`,
+    { imageId, text }
   )
   return mapComment(response.data)
 }
 
-async function uploadImage(file, uploadedBy, caption = '') {
+async function uploadImage(file, caption = '') {
   if (!file) {
     throw new Error('file_required')
   }
 
+  // The uploader is stamped server-side from the authenticated identity.
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('uploadedBy', (uploadedBy || '').trim() || 'Unknown')
   formData.append('caption', (caption || '').trim())
 
   const response = await axios.post(`${IMAGE_BASE}/`, formData)
   return mapImage(response.data)
 }
 
+async function updateComment(imageId, commentId, text) {
+  const trimmed = (text || '').trim()
+  if (!trimmed) {
+    throw new Error('invalid_comment')
+  }
+
+  const response = await axios.put(
+    `${COMMENT_BASE}/${encodeURIComponent(imageId)}/comment/${encodeURIComponent(commentId)}`,
+    { text: trimmed }
+  )
+  return mapComment(response.data)
+}
+
 async function deleteComment(imageId, commentId) {
   await axios.delete(
-    `${COMMENT_BASE}/${encodeURIComponent(imageId)}/comments/${encodeURIComponent(commentId)}`
+    `${COMMENT_BASE}/${encodeURIComponent(imageId)}/comment/${encodeURIComponent(commentId)}`
   )
   return true
 }
@@ -127,4 +134,4 @@ async function deleteImage(imageId) {
   return true
 }
 
-export { listImages, getImage, listComments, addComment, deleteComment, uploadImage, updateCaption, deleteImage, mapImage, rawImageUrl }
+export { listImages, getImage, listComments, addComment, updateComment, deleteComment, uploadImage, updateCaption, deleteImage, mapImage, rawImageUrl }

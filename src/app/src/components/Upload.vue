@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { VaButton } from 'vuestic-ui'
-import { getCurrentUserName } from '../utils/auth'
 import { uploadImage as saveImage } from '../utils/galleryApi'
 import { uploadAlbumZip } from '../utils/folderApi'
 import { compressImage } from '../utils/imageCompression'
@@ -84,7 +83,7 @@ async function uploadImage() {
 
   try {
     if (isZip.value) {
-      const folder = await uploadAlbumZip(selectedFile.value, getCurrentUserName() || 'Unknown')
+      const folder = await uploadAlbumZip(selectedFile.value)
       if (folder?.id) {
         success.value = true
         // Open the newly created album
@@ -94,7 +93,7 @@ async function uploadImage() {
       }
     } else {
       const fileToUpload = await compressImage(selectedFile.value)
-      const response = await saveImage(fileToUpload, getCurrentUserName() || 'Unknown', caption.value)
+      const response = await saveImage(fileToUpload, caption.value)
 
       if (response?.id) {
         success.value = true

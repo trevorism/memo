@@ -14,6 +14,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.Put
 import io.micronaut.security.authentication.Authentication
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -31,7 +32,7 @@ class CommentController {
 
     @Tag(name = 'Comment Operations')
     @Operation(summary = 'List comments for an image, newest first **Secure')
-    @Get(value = '/{imageId}/comments', produces = MediaType.APPLICATION_JSON)
+    @Get(value = '/{imageId}/comment', produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
     List<ImageComment> listComments(String imageId) {
         return commentService.listComments(imageId)
@@ -39,10 +40,13 @@ class CommentController {
 
     @Tag(name = 'Comment Operations')
     @Operation(summary = 'Add a comment to an image **Secure')
-    @Post(value = '/{imageId}/comments', consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
+    @Post(value = '/{imageId}/comment', consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
-    ImageComment addComment(String imageId, @Body ImageComment comment) {
+    ImageComment addComment(String imageId, @Body ImageComment comment, @Nullable Authentication authentication) {
         try {
+            // Stamp the author from the authenticated identity (JWT), never the
+            // client-supplied body, so it always matches the authorization check.
+            comment.author = authentication?.name
             commentService.addComment(imageId, comment)
         } catch (Exception e) {
             log.error('Error creating comment for image {}', imageId, e)
@@ -51,8 +55,29 @@ class CommentController {
     }
 
     @Tag(name = 'Comment Operations')
+    @Operation(summary = 'Update a comment by id (author or admin only) **Secure')
+    @Put(value = '/{imageId}/comment/{commentId}', consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
+    @Secure(value = Roles.USER)
+    HttpResponse updateComment(String imageId, String commentId, @Body ImageComment update, @Nullable Authentication authentication) {
+        try {
+            ImageComment comment = commentService.getComment(commentId)
+            if (!comment || comment.imageId != imageId) {
+                return HttpResponse.notFound()
+            }
+            if (!isAuthorOrAdmin(comment, authentication)) {
+                return HttpResponse.status(HttpStatus.FORBIDDEN)
+            }
+            ImageComment updated = commentService.updateComment(commentId, update)
+            return HttpResponse.ok(updated)
+        } catch (Exception e) {
+            log.error('Error updating comment {} for image {}', commentId, imageId, e)
+            return HttpResponse.serverError()
+        }
+    }
+
+    @Tag(name = 'Comment Operations')
     @Operation(summary = 'Delete a comment by id (author or admin only) **Secure')
-    @Delete(value = '/{imageId}/comments/{commentId}', produces = MediaType.APPLICATION_JSON)
+    @Delete(value = '/{imageId}/comment/{commentId}', produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
     HttpResponse deleteComment(String imageId, String commentId, @Nullable Authentication authentication) {
         try {
@@ -81,7 +106,8 @@ class CommentController {
             return true
         }
 
-        return true
+        String caller = authentication.name
+        return caller && comment.author && caller.equalsIgnoreCase(comment.author)
     }
 
 }

@@ -6,6 +6,7 @@ interface CommentService {
 
     List<ImageComment> listComments(String imageId)
     ImageComment addComment(String imageId, ImageComment comment)
+    ImageComment updateComment(String commentId, ImageComment comment)
     ImageComment getComment(String commentId)
     boolean deleteComment(String commentId)
     int countComments(String imageId)

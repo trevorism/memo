@@ -63,7 +63,7 @@ class FolderController {
 
     @Tag(name = 'Folder Operations')
     @Operation(summary = 'List the images contained in a folder, newest first **Secure')
-    @Get(value = '/{id}/images', produces = MediaType.APPLICATION_JSON)
+    @Get(value = '/{id}/image', produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
     HttpResponse<List<Image>> listFolderImages(String id) {
         try {
@@ -101,7 +101,7 @@ class FolderController {
             if (!name?.trim()) {
                 return HttpResponse.badRequest()
             }
-            String username = body?.username?.trim() ?: (authentication?.name ?: 'Unknown')
+            String username = authentication?.name ?: 'Unknown'
             Folder folder = folderService.createFolder(name, username)
             return HttpResponse.created(populate(folder))
         } catch (Exception e) {
@@ -114,9 +114,9 @@ class FolderController {
     @Operation(summary = 'Create an album from a zip of images, named after the zip file **Secure')
     @Post(value = '/zip', consumes = MediaType.MULTIPART_FORM_DATA, produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
-    HttpResponse uploadZip(@Part CompletedFileUpload file, @Part @Nullable String uploadedBy, @Nullable Authentication authentication) {
+    HttpResponse uploadZip(@Part CompletedFileUpload file, @Nullable Authentication authentication) {
         try {
-            String username = uploadedBy?.trim() ?: (authentication?.name ?: 'Unknown')
+            String username = authentication?.name ?: 'Unknown'
             Folder folder = file.getInputStream().withCloseable { InputStream zipStream ->
                 folderService.createFolderFromZip(zipStream, file.filename, username)
             }
@@ -190,7 +190,7 @@ class FolderController {
 
     @Tag(name = 'Folder Operations')
     @Operation(summary = 'Add an image to a folder **Secure')
-    @Post(value = '/{id}/images/{imageId}', produces = MediaType.APPLICATION_JSON)
+    @Post(value = '/{id}/image/{imageId}', produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
     HttpResponse<Folder> addImageToFolder(String id, String imageId) {
         try {
@@ -207,7 +207,7 @@ class FolderController {
 
     @Tag(name = 'Folder Operations')
     @Operation(summary = 'Remove an image from a folder **Secure')
-    @Delete(value = '/{id}/images/{imageId}', produces = MediaType.APPLICATION_JSON)
+    @Delete(value = '/{id}/image/{imageId}', produces = MediaType.APPLICATION_JSON)
     @Secure(value = Roles.USER)
     HttpResponse<Folder> removeImageFromFolder(String id, String imageId) {
         try {

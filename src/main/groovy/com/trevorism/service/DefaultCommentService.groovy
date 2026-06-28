@@ -48,12 +48,30 @@ class DefaultCommentService implements CommentService {
 
         ImageComment imageComment = new ImageComment(
                 imageId: imageId,
-                author: comment.author?.trim() ?: 'Anonymous',
+                author: comment.author?.trim() ?: 'Unknown',
                 text: comment.text.trim(),
                 createdDate: new Date()
         )
         ImageComment created = repository.create(imageComment)
         return created
+    }
+
+    @Override
+    ImageComment updateComment(String commentId, ImageComment comment) {
+        if (!commentId) {
+            return null
+        }
+        if (!comment?.text?.trim()) {
+            throw new IllegalArgumentException('Comment text is required')
+        }
+
+        ImageComment existing = repository.get(commentId)
+        if (!existing) {
+            return null
+        }
+
+        existing.text = comment.text.trim()
+        return repository.update(commentId, existing)
     }
 
     @Override
