@@ -1,3 +1,7 @@
+# 0.5.0
+
+Update dependencies and add unit tests.
+
 # 0.4.0
 
 Fix several infrastructure/deployment issues.
