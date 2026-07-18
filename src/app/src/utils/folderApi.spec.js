@@ -33,7 +33,7 @@ describe('folderApi', () => {
 
     expect(folders.length).toBe(2)
     expect(folders[0]).toMatchObject({ id: 'f1', name: 'Untitled', username: 'Unknown', imageCount: 2 })
-    expect(folders[1].coverUrl).toBe('/api/image/c9/raw')
+    expect(folders[1].coverUrl).toBe('/api/image/c9/thumb')
   })
 
   it('listFolders tolerates a non-array payload', async () => {

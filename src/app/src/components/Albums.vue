@@ -141,6 +141,8 @@ defineExpose({ openCreateModal })
             v-if="folder.coverUrl && !failedCoverIds[folder.id]"
             :src="folder.coverUrl"
             :alt="folder.name"
+            loading="lazy"
+            decoding="async"
             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             @error="markCoverFailed(folder.id)"
           />

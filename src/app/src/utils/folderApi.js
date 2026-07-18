@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { mapImage, rawImageUrl } from './galleryApi'
+import { mapImage, thumbImageUrl } from './galleryApi'
 
 const FOLDER_BASE = '/api/folder'
 
@@ -15,7 +15,7 @@ function mapFolder(raw) {
     username: raw.username || 'Unknown',
     imageCount: raw.imageCount ?? (Array.isArray(raw.imageIds) ? raw.imageIds.length : 0),
     coverImageId,
-    coverUrl: coverImageId ? rawImageUrl(coverImageId) : null,
+    coverUrl: coverImageId ? thumbImageUrl(coverImageId) : null,
     createdDate: raw.createdDate || null
   }
 }
