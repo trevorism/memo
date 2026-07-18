@@ -1,3 +1,7 @@
+# 0.6.0
+
+Generate thumbnails and lazy load gallery images.
+
 # 0.5.0
 
 Update dependencies and add unit tests.

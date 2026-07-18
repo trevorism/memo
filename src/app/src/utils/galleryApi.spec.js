@@ -23,7 +23,7 @@ describe('galleryApi', () => {
       {
         id: 'abc',
         url: '/api/image/abc/raw',
-        thumbnailUrl: '/api/image/abc/raw',
+        thumbnailUrl: '/api/image/abc/thumb',
         uploadedBy: 'trevor',
         caption: '',
         commentCount: 3,

@@ -11,6 +11,10 @@ import io.micronaut.http.annotation.ServerFilter
 class CacheControlFilter {
 
     private static final String IMMUTABLE = "public, max-age=31536000, immutable"
+    // Original bytes never change for an id, but are user-scoped, so keep them out of shared caches.
+    private static final String RAW_IMMUTABLE = "private, max-age=31536000, immutable"
+    // Thumbnails are regenerable (algorithm fixes, orientation corrections), so cache for only a day.
+    private static final String THUMB_CACHE = "private, max-age=86400"
     private static final String NO_CACHE = "no-cache, must-revalidate"
     private static final String NO_STORE = "no-store"
 
@@ -19,6 +23,10 @@ class CacheControlFilter {
         String path = request.path
         if (path.startsWith("/assets/")) {
             setCacheControl(response, isSuccess(response) ? IMMUTABLE : NO_STORE)
+        } else if (path.startsWith("/api/image/") && path.endsWith("/raw")) {
+            setCacheControl(response, isSuccess(response) ? RAW_IMMUTABLE : NO_STORE)
+        } else if (path.startsWith("/api/image/") && path.endsWith("/thumb")) {
+            setCacheControl(response, isSuccess(response) ? THUMB_CACHE : NO_STORE)
         } else if (acceptsHtml(request)) {
             setCacheControl(response, NO_CACHE)
         }

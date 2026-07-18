@@ -105,6 +105,57 @@ class ImageController {
         }
     }
 
+    @Tag(name = "Image Operations")
+    @Operation(summary = "Stream a small JPEG thumbnail by id, generating it on first request **Secure")
+    @Get(value = "/{id}/thumb", produces = MediaType.APPLICATION_OCTET_STREAM)
+    @Secure(value = Roles.USER)
+    HttpResponse<byte[]> getThumbnailBytes(String id) {
+        try {
+            Image image = imageService.getImage(id)
+            if (!image) {
+                return HttpResponse.notFound()
+            }
+            // Lazily generate and persist the thumbnail the first time it is viewed.
+            image = imageService.ensureThumbnail(image)
+
+            byte[] data = imageService.getThumbnailData(image)
+            MediaType mediaType = MediaType.IMAGE_JPEG_TYPE
+            if (data == null) {
+                // No thumbnail available (e.g. unsupported source) — fall back to the original.
+                data = imageService.getImageData(image)
+                mediaType = resolveImageMediaType(image.bucketPath)
+            }
+            if (data == null) {
+                return HttpResponse.notFound()
+            }
+            return HttpResponse.ok(data).contentType(mediaType)
+        } catch (Exception e) {
+            log.error("Error streaming thumbnail {}", id, e)
+            return HttpResponse.serverError()
+        }
+    }
+
+    @Tag(name = "Image Operations")
+    @Operation(summary = "Discard the stored thumbnail so it regenerates on next view (owner or admin only) **Secure")
+    @Delete(value = "/{id}/thumbnail", produces = MediaType.APPLICATION_JSON)
+    @Secure(value = Roles.USER)
+    HttpResponse regenerateThumbnail(String id, @Nullable Authentication authentication) {
+        try {
+            Image image = imageService.getImage(id)
+            if (!image) {
+                return HttpResponse.notFound()
+            }
+            if (!isOwnerOrAdmin(image, authentication)) {
+                return HttpResponse.status(HttpStatus.FORBIDDEN)
+            }
+            imageService.clearThumbnail(id)
+            return HttpResponse.noContent()
+        } catch (Exception e) {
+            log.error("Error clearing thumbnail {}", id, e)
+            return HttpResponse.serverError()
+        }
+    }
+
     private static MediaType resolveImageMediaType(String bucketPath) {
         String lower = (bucketPath ?: "").toLowerCase()
         if (lower.endsWith(".png")) {

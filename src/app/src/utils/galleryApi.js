@@ -7,16 +7,19 @@ function rawImageUrl(id) {
   return `${IMAGE_BASE}/${encodeURIComponent(id)}/raw`
 }
 
+function thumbImageUrl(id) {
+  return `${IMAGE_BASE}/${encodeURIComponent(id)}/thumb`
+}
+
 function mapImage(raw) {
   if (!raw || !raw.id) {
     return null
   }
 
-  const url = rawImageUrl(raw.id)
   return {
     id: raw.id,
-    url,
-    thumbnailUrl: url,
+    url: rawImageUrl(raw.id),
+    thumbnailUrl: thumbImageUrl(raw.id),
     uploadedBy: raw.username || raw.uploadedBy || 'Unknown',
     caption: raw.caption || '',
     commentCount: raw.commentCount ?? 0,
@@ -134,4 +137,4 @@ async function deleteImage(imageId) {
   return true
 }
 
-export { listImages, getImage, listComments, addComment, updateComment, deleteComment, uploadImage, updateCaption, deleteImage, mapImage, rawImageUrl }
+export { listImages, getImage, listComments, addComment, updateComment, deleteComment, uploadImage, updateCaption, deleteImage, mapImage, rawImageUrl, thumbImageUrl }

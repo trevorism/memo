@@ -21,6 +21,12 @@ interface ImageService {
 
     byte[] getImageData(Image image)
 
+    byte[] getThumbnailData(Image image)
+
+    Image ensureThumbnail(Image image)
+
+    Image clearThumbnail(String id)
+
     boolean deleteImage(String id)
 }
 

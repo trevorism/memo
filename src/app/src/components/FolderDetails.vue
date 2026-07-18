@@ -231,6 +231,8 @@ async function performDeleteFolder() {
             v-else
             :src="image.thumbnailUrl || image.url"
             :alt="'Photo from ' + image.uploadedBy"
+            loading="lazy"
+            decoding="async"
             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             @error="markImageFailed(image.id)"
           />
@@ -330,6 +332,8 @@ async function performDeleteFolder() {
                 v-else
                 :src="image.thumbnailUrl || image.url"
                 :alt="'Photo from ' + image.uploadedBy"
+                loading="lazy"
+                decoding="async"
                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 @error="markAddFailed(image.id)"
               />
