@@ -27,9 +27,20 @@ function isAuthPath(url) {
   return !!url && AUTH_PATHS.some((path) => url.includes(path))
 }
 
+// A failed refresh means the session is unrecoverable. The backend clears the
+// identity cookies on failure, but we clear them here too so a stale user_name
+// can never survive to re-render the logged-in view and re-loop (e.g. the no
+// refresh_token path). Then a hard nav to '/' re-reads cookies and shows the
+// splash page. The guard keeps concurrent 401s from each firing a navigation.
+let redirecting = false
 function redirectToLogin() {
-  // Cookies were cleared by a failed refresh; a hard nav re-reads them and shows
-  // the splash/login page.
+  if (redirecting) return
+  redirecting = true
+  document.cookie = 'user_name=; Max-Age=0; path=/; domain=.memowand.com'
+  document.cookie = 'admin=; Max-Age=0; path=/; domain=.memowand.com'
+  // Host-only variants so local dev doesn't loop either.
+  document.cookie = 'user_name=; Max-Age=0; path=/'
+  document.cookie = 'admin=; Max-Age=0; path=/'
   window.location.assign('/')
 }
 
