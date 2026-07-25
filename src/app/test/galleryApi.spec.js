@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import { listImages, getImage, listComments, addComment, uploadImage, deleteImage } from './galleryApi'
+import { listImages, getImage, listComments, addComment, uploadImage, deleteImage } from '../src/utils/galleryApi'
 
 vi.mock('axios')
 

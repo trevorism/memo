@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { compressImage } from './imageCompression'
+import { compressImage } from '../src/utils/imageCompression'
 
 describe('compressImage', () => {
   it('returns the input unchanged when there is no file', async () => {

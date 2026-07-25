@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatDateTime, toTimestamp } from './format'
+import { formatDate, formatDateTime, toTimestamp } from '../src/utils/format'
 
 describe('format', () => {
   it('returns empty string for missing or invalid dates', () => {

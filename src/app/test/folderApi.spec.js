@@ -6,7 +6,7 @@ import {
   createFolder,
   uploadAlbumZip,
   deleteFolder
-} from './folderApi'
+} from '../src/utils/folderApi'
 
 vi.mock('axios', () => ({
   default: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() }

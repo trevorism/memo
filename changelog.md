@@ -1,3 +1,7 @@
+# 0.7.0
+
+Update js dependencies.
+
 # 0.6.0
 
 Generate thumbnails and lazy load gallery images.

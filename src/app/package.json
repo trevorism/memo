@@ -26,14 +26,14 @@
     "@trevorism/vitest-test-result-events": "^2.0.0",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/test-utils": "^2.4.11",
+    "@vue/test-utils": "^2.2.7",
     "autoprefixer": "^10.5.4",
     "axios": "^1.18.1",
-    "cypress": "^15.18.1",
-    "eslint": "^10.7.0",
-    "eslint-plugin-vue": "^10.9.2",
+    "cypress": "^15.19.0",
+    "eslint": "^10.8.0",
+    "eslint-plugin-vue": "^10.10.0",
     "jsdom": "^29.1.1",
-    "prettier": "^3.9.5",
+    "prettier": "^3.9.6",
     "properties-reader": "^3.0.1",
     "tailwindcss": "^4.3.3",
     "vite": "^8.1.5",
@@ -44,6 +44,6 @@
   },
   "allowScripts": {
     "vue-demi@0.14.10": true,
-    "cypress@15.18.1": true
+    "cypress@15.19.0": true
   }
 }
