@@ -5,7 +5,7 @@ import {
   isLoggedIn,
   isAdmin,
   canManageFolder
-} from './auth'
+} from '../src/utils/auth'
 
 function clearCookies() {
   document.cookie.split(';').forEach((c) => {

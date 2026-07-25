@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import { warmup, login, logout, register, forgotPassword, getOAuthRedirectUrl } from './authApi'
+import { warmup, login, logout, register, forgotPassword, getOAuthRedirectUrl } from '../src/utils/authApi'
 
 vi.mock('axios', () => ({
   default: { get: vi.fn(), post: vi.fn() }

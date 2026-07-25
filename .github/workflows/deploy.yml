@@ -21,6 +21,6 @@ jobs:
     with:
       gcp_project: 'trevorism-memo'
       gcp_project_id: '139575947486'
-      version: '0-6-0'
+      version: '0-7-0'
       service: 'default'
     secrets: inherit

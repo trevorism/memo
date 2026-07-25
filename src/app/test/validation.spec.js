@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isValidUsername, isValidEmail, isValidPassword } from './validation'
+import { isValidUsername, isValidEmail, isValidPassword } from '../src/utils/validation'
 
 describe('validation', () => {
   it('requires usernames of at least 3 characters, ignoring surrounding space', () => {
