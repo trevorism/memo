@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import { warmup, login, logout, register, forgotPassword, getOAuthRedirectUrl } from '../src/utils/authApi'
+import { login, logout, register, forgotPassword, getOAuthRedirectUrl } from '../src/utils/authApi'
+import { logout as endSession } from '@trevorism/ui-auth'
 
 vi.mock('axios', () => ({
   default: { get: vi.fn(), post: vi.fn() }
+}))
+
+vi.mock('@trevorism/ui-auth', () => ({
+  logout: vi.fn(() => Promise.resolve())
 }))
 
 const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
@@ -16,11 +21,6 @@ describe('authApi', () => {
     axios.post.mockResolvedValue({})
   })
 
-  it('warmup hits the warmup endpoint', async () => {
-    await warmup()
-    expect(axios.get).toHaveBeenCalledWith('/api/authWarmup')
-  })
-
   it('login posts credentials to the tenant login endpoint', async () => {
     await login('alice', 'secret1')
     expect(axios.post).toHaveBeenCalledWith(`/api/login/${TENANT_GUID}`, {
@@ -29,9 +29,11 @@ describe('authApi', () => {
     })
   })
 
-  it('logout posts to the logout endpoint', async () => {
+  it('logout clears the session through the auth library', async () => {
     await logout()
-    expect(axios.post).toHaveBeenCalledWith('/api/logout/')
+
+    expect(endSession).toHaveBeenCalledTimes(1)
+    expect(axios.post).not.toHaveBeenCalled()
   })
 
   it('register posts the new-user payload', async () => {

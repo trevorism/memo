@@ -1,21 +1,14 @@
 import axios from 'axios'
-
-// Single source for auth/account HTTP calls, mirroring the galleryApi/folderApi
-// pattern so components don't reach for axios directly.
+import { logout as endSession } from '@trevorism/ui-auth'
 
 const TENANT_GUID = '606db07c-3733-4697-88de-bb159773ea94'
-
-// Primes auth cookies before the login screen decides where to send the user.
-async function warmup() {
-  await axios.get('/api/authWarmup')
-}
 
 async function login(username, password) {
   await axios.post(`/api/login/${TENANT_GUID}`, { username, password })
 }
 
 async function logout() {
-  await axios.post('/api/logout/')
+  await endSession()
 }
 
 async function register({ username, email, password }) {
@@ -36,4 +29,4 @@ async function getOAuthRedirectUrl(provider, returnUrl = '') {
   return response.data
 }
 
-export { warmup, login, logout, register, forgotPassword, getOAuthRedirectUrl }
+export { login, logout, register, forgotPassword, getOAuthRedirectUrl }

@@ -1,5 +1,6 @@
 package com.trevorism.controller
 
+import com.trevorism.AppVersion
 import com.trevorism.http.async.AsyncHttpClient
 import com.trevorism.http.async.AsyncJsonHttpClient
 import io.micronaut.http.HttpResponse
@@ -60,16 +61,7 @@ class RootController {
     )
     @Get(value = "/version", produces = MediaType.TEXT_PLAIN)
     String version() {
-        return "0-6-0"
-    }
-
-    @Tag(name = "Root Operations")
-    @Operation(summary = "Warms up the authorization service")
-    @Get(value = "/authWarmup")
-    void warmupAuthService() {
-        AsyncHttpClient client = new AsyncJsonHttpClient()
-        client.get("https://datastore.trevorism.com/ping", {} as FutureCallback)
-        client.get("https://auth.trevorism.com/ping", {} as FutureCallback)
+        return AppVersion.SEMVER
     }
 
 }

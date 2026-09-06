@@ -7,10 +7,16 @@ import com.trevorism.model.LoginEvent
 import com.trevorism.model.LoginRequest
 import com.trevorism.model.User
 import com.trevorism.service.UserSessionService
+import com.trevorism.ui.CookieDomainPolicy
+import com.trevorism.ui.PublicOrigin
+import com.trevorism.ui.PublicOriginResolver
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Error
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.cookie.Cookie
@@ -27,22 +33,31 @@ class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController)
 
+    private static final int ACCESS_MAX_AGE = 15 * 60
+    private static final int REFRESH_MAX_AGE = 24 * 60 * 60
+
     @Inject
     private UserSessionService userSessionService
+
+    @Inject
+    private PublicOriginResolver publicOriginResolver
+
+    @Inject
+    private CookieDomainPolicy cookieDomainPolicy
 
     private AsyncHttpClient asyncHttpClient = new AsyncJsonHttpClient()
 
     @Tag(name = "Login Operations")
     @Operation(summary = "Login to Memowand")
     @Post(value = "/", produces = MediaType.APPLICATION_JSON, consumes = MediaType.APPLICATION_JSON)
-    HttpResponse login(@Body LoginRequest loginRequest) {
-        return login(loginRequest, null)
+    HttpResponse login(@Body LoginRequest loginRequest, HttpRequest<?> request) {
+        return login(loginRequest, null, request)
     }
 
     @Tag(name = "Login Operations")
     @Operation(summary = "Login to Memowand with the given tenant")
     @Post(value = "/{guid}", produces = MediaType.APPLICATION_JSON, consumes = MediaType.APPLICATION_JSON)
-    HttpResponse login(@Body LoginRequest loginRequest, String guid) {
+    HttpResponse login(@Body LoginRequest loginRequest, String guid, HttpRequest<?> request) {
         String token = userSessionService.getToken(loginRequest, guid)
         if (!token) {
             sendLoginEvent(loginRequest, guid, false)
@@ -57,16 +72,22 @@ class LoginController {
 
         String refreshToken = userSessionService.getRefreshToken(loginRequest, guid)
 
-        int accessMaxAge = 15 * 60
-        int refreshMaxAge = 24 * 60 * 60
+        PublicOrigin origin = publicOriginResolver.resolve(request)
+        String domain = cookieDomainPolicy.domainFor(origin.host())
+        boolean secure = origin.requiresSecureCookies()
 
-        def cookie1 = new NettyCookie("session", token).path("/").maxAge(accessMaxAge).secure(true).domain(".memowand.com").httpOnly(true)
-        def cookie2 = new NettyCookie("user_name", loginRequest.username).path("/").maxAge(refreshMaxAge).secure(true).domain(".memowand.com")
-        def cookie3 = new NettyCookie("admin", user.admin.toString()).path("/").maxAge(refreshMaxAge).secure(true).domain(".memowand.com")
-        def cookie4 = new NettyCookie("refresh_token", refreshToken ?: "").path("/").maxAge(refreshMaxAge).secure(true).domain(".memowand.com").httpOnly(true)
+        def cookie1 = cookie("session", token, ACCESS_MAX_AGE, true, domain, secure)
+        def cookie2 = cookie("user_name", loginRequest.username, REFRESH_MAX_AGE, false, domain, secure)
+        def cookie3 = cookie("admin", user.admin.toString(), REFRESH_MAX_AGE, false, domain, secure)
+        def cookie4 = cookie("refresh_token", refreshToken ?: "", REFRESH_MAX_AGE, true, domain, secure)
 
         sendLoginEvent(loginRequest, guid, true)
         return HttpResponse.ok().cookies([cookie1, cookie2, cookie3, cookie4] as Set<Cookie>)
+    }
+
+    private static Cookie cookie(String name, String value, int maxAge, boolean httpOnly, String domain, boolean secure) {
+        Cookie cookie = new NettyCookie(name, value).path("/").maxAge(maxAge).secure(secure).httpOnly(httpOnly)
+        return domain ? cookie.domain(domain) : cookie
     }
 
     @Tag(name = "Login Operations")
@@ -97,6 +118,11 @@ class LoginController {
         } catch (Exception e) {
             throw new HttpResponseException(400, e.message)
         }
+    }
+
+    @Error(exception = HttpResponseException)
+    HttpResponse<Map> handleRejectedRequest(HttpResponseException exception) {
+        return HttpResponse.status(HttpStatus.valueOf(exception.statusCode)).body([message: exception.reasonPhrase])
     }
 
     private void sendLoginEvent(LoginRequest loginRequest, String guid, boolean success) {
