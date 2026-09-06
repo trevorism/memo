@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import { warmup, login, logout, register, forgotPassword, getOAuthRedirectUrl } from '../src/utils/authApi'
+import { login, logout, register, forgotPassword, getOAuthRedirectUrl } from '../src/utils/authApi'
 import { logout as endSession } from '@trevorism/ui-auth'
 
 vi.mock('axios', () => ({
@@ -19,11 +19,6 @@ describe('authApi', () => {
     axios.post.mockReset()
     axios.get.mockResolvedValue({ data: '' })
     axios.post.mockResolvedValue({})
-  })
-
-  it('warmup hits the warmup endpoint', async () => {
-    await warmup()
-    expect(axios.get).toHaveBeenCalledWith('/api/authWarmup')
   })
 
   it('login posts credentials to the tenant login endpoint', async () => {

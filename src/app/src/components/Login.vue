@@ -86,7 +86,7 @@
 import {VaButton} from "vuestic-ui";
 import { isLoggedIn, sessionSettled } from '../utils/auth'
 import { destinationFromQuery } from '../utils/redirectTarget'
-import { warmup, login, getOAuthRedirectUrl } from '../utils/authApi'
+import { login, getOAuthRedirectUrl } from '../utils/authApi'
 
 export default {
   name: 'Login',
@@ -103,15 +103,6 @@ export default {
     await sessionSettled()
     if (isLoggedIn()) {
       this.$router.replace({ name: 'Home' })
-      return
-    }
-
-    try {
-      await warmup()
-    } finally {
-      if (isLoggedIn()) {
-        this.$router.replace({ name: 'Home' })
-      }
     }
   },
   methods: {
