@@ -84,7 +84,8 @@
 
 <script>
 import {VaButton} from "vuestic-ui";
-import { isLoggedIn } from '../utils/auth'
+import { isLoggedIn, sessionSettled } from '../utils/auth'
+import { destinationFromQuery } from '../utils/redirectTarget'
 import { warmup, login, getOAuthRedirectUrl } from '../utils/authApi'
 
 export default {
@@ -99,6 +100,7 @@ export default {
     }
   },
   async mounted() {
+    await sessionSettled()
     if (isLoggedIn()) {
       this.$router.replace({ name: 'Home' })
       return
@@ -113,8 +115,11 @@ export default {
     }
   },
   methods: {
+    destination: function () {
+      return destinationFromQuery(this.$route.query)
+    },
     loginGoogle: function() {
-      getOAuthRedirectUrl('google', this.$route.query.return_url)
+      getOAuthRedirectUrl('google', this.destination())
           .then(redirectUrl => {
             window.location.href = redirectUrl
           })
@@ -123,7 +128,7 @@ export default {
           })
     },
     loginMicrosoft: function() {
-      getOAuthRedirectUrl('microsoft', this.$route.query.return_url)
+      getOAuthRedirectUrl('microsoft', this.destination())
         .then(redirectUrl => {
           window.location.href = redirectUrl
         })
@@ -138,8 +143,7 @@ export default {
       login(this.username, this.password)
         .then(() => {
           // Hard navigation so the app re-reads the freshly set auth cookies.
-          const returnUrl = self.$route.query.return_url
-          window.location.assign(returnUrl || '/')
+          window.location.assign(self.destination() || '/')
         })
         .catch(() => {
           this.errorMessage = 'Unable to login'

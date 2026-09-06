@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { canManageFolder, getCurrentUserName, isAdmin, isLoggedIn } from '../src/utils/auth'
+import {
+  canManageFolder,
+  getCurrentUserName,
+  isAdmin,
+  isLoggedIn,
+  sessionSettled
+} from '../src/utils/auth'
 
 const session = vi.hoisted(() => ({ state: null }))
 
@@ -11,7 +17,8 @@ vi.mock('@trevorism/ui-auth', async () => {
       session.state.authenticated ? { username: session.state.username } : null
     ),
     isAuthenticated: computed(() => session.state.authenticated),
-    isAdmin: computed(() => session.state.authenticated && session.state.admin)
+    isAdmin: computed(() => session.state.authenticated && session.state.admin),
+    ready: Promise.resolve()
   }
 })
 
@@ -60,6 +67,10 @@ describe('auth', () => {
 
     expect(canManageFolder({ username: 'alice' })).toBe(true)
     expect(canManageFolder({ username: 'bob' })).toBe(false)
+  })
+
+  it('exposes the librarys ready promise so a page can wait for the first session fetch', async () => {
+    await expect(sessionSettled()).resolves.toBeUndefined()
   })
 
   it('canManageFolder refuses a signed out visitor', () => {

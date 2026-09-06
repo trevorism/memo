@@ -1,4 +1,8 @@
-import { isAdmin as sessionIsAdmin, isAuthenticated, user } from '@trevorism/ui-auth'
+import { isAdmin as sessionIsAdmin, isAuthenticated, ready, user } from '@trevorism/ui-auth'
+
+export function sessionSettled() {
+  return ready
+}
 
 export function getCurrentUserName() {
   return user.value?.username ?? ''
