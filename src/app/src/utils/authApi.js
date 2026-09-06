@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { logout as endSession } from '@trevorism/ui-auth'
 
 // Single source for auth/account HTTP calls, mirroring the galleryApi/folderApi
 // pattern so components don't reach for axios directly.
@@ -15,7 +16,7 @@ async function login(username, password) {
 }
 
 async function logout() {
-  await axios.post('/api/logout/')
+  await endSession()
 }
 
 async function register({ username, email, password }) {

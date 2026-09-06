@@ -1,31 +1,15 @@
-export function getCookieValue(name) {
-  const cookiePrefix = `${name}=`
-  const cookies = document.cookie ? document.cookie.split('; ') : []
-
-  for (const cookie of cookies) {
-    if (cookie.startsWith(cookiePrefix)) {
-      try {
-        return decodeURIComponent(cookie.substring(cookiePrefix.length))
-      } catch {
-        return ''
-      }
-    }
-  }
-
-  return ''
-}
-
+import { isAdmin as sessionIsAdmin, isAuthenticated, user } from '@trevorism/ui-auth'
 
 export function getCurrentUserName() {
-  return getCookieValue('user_name')
+  return user.value?.username ?? ''
 }
 
 export function isLoggedIn() {
-  return !!getCurrentUserName()?.trim()
+  return isAuthenticated.value
 }
 
 export function isAdmin() {
-  return getCookieValue('admin')?.trim().toLowerCase() === 'true'
+  return sessionIsAdmin.value
 }
 
 // Mirrors the backend's creator-or-admin check used to authorize folder deletion.
@@ -36,4 +20,3 @@ export function canManageFolder(folder) {
   const me = getCurrentUserName()?.trim().toLowerCase()
   return !!me && (folder?.username || '').toLowerCase() === me
 }
-

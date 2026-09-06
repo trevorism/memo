@@ -1,3 +1,9 @@
+# 0.8.0
+
+Move the session, refresh and logout onto the shared auth libraries, keeping the
+Memowand login page. Nothing reads document.cookie any more and signing in locally
+works without forging a token.
+
 # 0.7.0
 
 Update js dependencies.

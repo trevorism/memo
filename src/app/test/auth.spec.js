@@ -1,70 +1,69 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  getCookieValue,
-  getCurrentUserName,
-  isLoggedIn,
-  isAdmin,
-  canManageFolder
-} from '../src/utils/auth'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { canManageFolder, getCurrentUserName, isAdmin, isLoggedIn } from '../src/utils/auth'
 
-function clearCookies() {
-  document.cookie.split(';').forEach((c) => {
-    const name = c.split('=')[0].trim()
-    if (name) {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
-    }
-  })
+const session = vi.hoisted(() => ({ state: null }))
+
+vi.mock('@trevorism/ui-auth', async () => {
+  const { reactive, computed } = await import('vue')
+  session.state = reactive({ authenticated: false, admin: false, username: null })
+  return {
+    user: computed(() =>
+      session.state.authenticated ? { username: session.state.username } : null
+    ),
+    isAuthenticated: computed(() => session.state.authenticated),
+    isAdmin: computed(() => session.state.authenticated && session.state.admin)
+  }
+})
+
+function signIn({ username = 'alice', admin = false } = {}) {
+  session.state.authenticated = true
+  session.state.username = username
+  session.state.admin = admin
 }
 
 describe('auth', () => {
   beforeEach(() => {
-    clearCookies()
+    session.state.authenticated = false
+    session.state.username = null
+    session.state.admin = false
   })
 
-  it('reads a cookie value and url-decodes it', () => {
-    document.cookie = 'user_name=' + encodeURIComponent('Alice Smith')
-    expect(getCookieValue('user_name')).toBe('Alice Smith')
-  })
-
-  it('returns empty string for a missing cookie', () => {
-    expect(getCookieValue('nope')).toBe('')
-  })
-
-  it('isLoggedIn reflects presence of a non-blank user_name', () => {
+  it('reports nobody signed in before the session loads', () => {
     expect(isLoggedIn()).toBe(false)
-    document.cookie = 'user_name=' + encodeURIComponent('bob')
-    expect(getCurrentUserName()).toBe('bob')
-    expect(isLoggedIn()).toBe(true)
+    expect(getCurrentUserName()).toBe('')
+    expect(isAdmin()).toBe(false)
   })
 
-  it('isAdmin is true only for admin=true (case-insensitive)', () => {
+  it('reads the username from the session', () => {
+    signIn({ username: 'alice' })
+
+    expect(isLoggedIn()).toBe(true)
+    expect(getCurrentUserName()).toBe('alice')
+  })
+
+  it('flags administrators only when they are signed in', () => {
+    session.state.admin = true
     expect(isAdmin()).toBe(false)
-    document.cookie = 'admin=TRUE'
+
+    signIn({ admin: true })
     expect(isAdmin()).toBe(true)
   })
 
-  it('isAdmin is false for other admin values', () => {
-    document.cookie = 'admin=false'
-    expect(isAdmin()).toBe(false)
-  })
-
   it('canManageFolder allows an admin regardless of owner', () => {
-    document.cookie = 'admin=true'
-    document.cookie = 'user_name=' + encodeURIComponent('someoneElse')
-    expect(canManageFolder({ username: 'notme' })).toBe(true)
+    signIn({ username: 'alice', admin: true })
+
+    expect(canManageFolder({ username: 'bob' })).toBe(true)
   })
 
-  it('canManageFolder allows the folder creator (case-insensitive)', () => {
-    document.cookie = 'user_name=' + encodeURIComponent('Alice')
+  it('canManageFolder allows the folder creator, case insensitively', () => {
+    signIn({ username: 'Alice' })
+
     expect(canManageFolder({ username: 'alice' })).toBe(true)
-  })
-
-  it('canManageFolder denies a non-owner non-admin', () => {
-    document.cookie = 'user_name=' + encodeURIComponent('alice')
     expect(canManageFolder({ username: 'bob' })).toBe(false)
   })
 
-  it('canManageFolder denies when nobody is logged in', () => {
+  it('canManageFolder refuses a signed out visitor', () => {
     expect(canManageFolder({ username: 'alice' })).toBe(false)
+    expect(canManageFolder(null)).toBe(false)
   })
 })

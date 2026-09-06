@@ -1,5 +1,5 @@
 <script setup lang="js">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { VaButton, VaDropdown, VaDropdownContent, VaIcon } from 'vuestic-ui'
 import { useTheme } from '../composables/useTheme'
 import { isLoggedIn, getCurrentUserName } from '../utils/auth'
@@ -7,8 +7,8 @@ import { logout as logoutRequest } from '../utils/authApi'
 
 const { theme, toggleTheme } = useTheme()
 
-const loggedIn = isLoggedIn()
-const userName = getCurrentUserName()?.trim() || ''
+const loggedIn = computed(() => isLoggedIn())
+const userName = computed(() => getCurrentUserName()?.trim() || '')
 const loggingOut = ref(false)
 
 async function logout() {

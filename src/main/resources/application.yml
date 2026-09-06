@@ -23,3 +23,8 @@ netty:
   default:
     allocator:
       max-order: 3
+
+trevorism:
+  ui-auth:
+    platform-domains:
+      - memowand.com
