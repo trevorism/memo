@@ -12,9 +12,11 @@ import com.trevorism.ui.PublicOrigin
 import com.trevorism.ui.PublicOriginResolver
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Error
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.cookie.Cookie
@@ -116,6 +118,11 @@ class LoginController {
         } catch (Exception e) {
             throw new HttpResponseException(400, e.message)
         }
+    }
+
+    @Error(exception = HttpResponseException)
+    HttpResponse<Map> handleRejectedRequest(HttpResponseException exception) {
+        return HttpResponse.status(HttpStatus.valueOf(exception.statusCode)).body([message: exception.reasonPhrase])
     }
 
     private void sendLoginEvent(LoginRequest loginRequest, String guid, boolean success) {

@@ -11,6 +11,7 @@ import com.trevorism.ui.UiAuthConfiguration
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.cookie.Cookie
+import org.apache.hc.client5.http.HttpResponseException
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse
 import org.apache.hc.core5.concurrent.FutureCallback
 import org.junit.jupiter.api.Test
@@ -77,6 +78,36 @@ class LoginControllerTest {
         assert !cookies["user_name"].isHttpOnly()
         assert cookies["session"].maxAge == 900L
         assert cookies["refresh_token"].maxAge == 86400L
+    }
+
+    @Test
+    void testRejectedCredentialsAnswerWithTheCarriedStatusRatherThanAServerError() {
+        HttpResponse response = controllerFor(["memowand.com"])
+                .handleRejectedRequest(new HttpResponseException(400, "Invalid username or password"))
+
+        assert response.status.code == 400
+        assert response.body().message == "Invalid username or password"
+    }
+
+    @Test
+    void testARejectedLoginIsNotA401ThatWouldTripTheLibrarysRefreshInterceptor() {
+        LoginController controller = controllerFor(["memowand.com"])
+        controller.userSessionService = new NoTokenUserSessionService()
+
+        HttpResponseException thrown = null
+        try {
+            controller.login(new LoginRequest(username: "alice", password: "wrong"), GUID,
+                    HttpRequest.POST("https://memowand.com/api/login/${GUID}", "").header("Host", "memowand.com"))
+        } catch (HttpResponseException e) {
+            thrown = e
+        }
+
+        assert thrown != null
+        assert controller.handleRejectedRequest(thrown).status.code == 400
+    }
+
+    private static class NoTokenUserSessionService extends StubUserSessionService {
+        String getToken(LoginRequest loginRequest, String guid) { return null }
     }
 
     private static class StubUserSessionService implements UserSessionService {
